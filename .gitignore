@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+
+# Netbeans
+nbactions.xml
+.nb-*
+
+# Intellij
+.idea/
+out/
+*.iml
+
+# TestFX
+screenshot*.png
+
+# logs
+*.log
+
+# JavaScript
+node_modules/
+dist/
+
+# Vim
+*.swp
+
+# OS X
+.DS_Store
