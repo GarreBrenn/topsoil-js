@@ -1,12 +1,10 @@
 {
-  "name": "web",
+  "name": "topsoil-js",
   "version": "1.0.0",
   "description": "",
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "start:dev": "webpack && webpack-dev-server",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "test2": "webpack dist/test.js -o dist/test2.js"
+    "start:dev": "webpack && webpack-dev-server"
   },
   "keywords": [],
   "author": "",

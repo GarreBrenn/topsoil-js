@@ -12,7 +12,7 @@ export interface Feature {
 
 }
 
-export enum Variable {
+export const enum Variable {
 
   LABEL = "label",
 
@@ -27,7 +27,7 @@ export enum Variable {
 
 }
 
-export enum Option {
+export const enum Option {
   TITLE = "title",
 
   X_AXIS = "x_axis",
