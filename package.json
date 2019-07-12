@@ -2,7 +2,7 @@
   "name": "topsoil-js",
   "version": "1.0.0",
   "description": "",
-  "main": "./src/index.ts",
+  "main": "./dist/topsoil.js",
   "types": "./@types/index.d.ts",
   "scripts": {
     "build": "webpack --config webpack.config.js",

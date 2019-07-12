@@ -19,7 +19,6 @@ screenshot*.png
 
 # JavaScript
 node_modules/
-dist/
 
 # Vim
 *.swp
