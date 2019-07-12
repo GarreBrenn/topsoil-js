@@ -5,8 +5,8 @@
   "main": "./dist/topsoil.js",
   "types": "./@types/index.d.ts",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "start:dev": "webpack && webpack-dev-server"
+    "build": "webpack",
+    "start:dev": "webpack-dev-server"
   },
   "keywords": [],
   "author": "",
