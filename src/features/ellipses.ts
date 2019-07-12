@@ -1,13 +1,20 @@
-import { cubicBezier } from "../functions/utils";
-import PlotOption from "../plots/plot-option";
-import ScatterPlot from "../plots/scatter";
 import * as d3 from "d3";
 import * as numeric from "numeric";
+
+import { cubicBezier } from "../utils";
+import { ScatterPlot, DataEntry } from "../plots";
 
 export const Ellipses = {
 
   draw(plot: ScatterPlot): void {
-    const ellipses = plot.dataLayer.selectAll(".ellipse").data(calcEllipses(plot));
+
+    const {
+      ellipses_fill: fill,
+      ellipses_opacity: opacity,
+      uncertainty
+    } = plot.options;
+
+    const ellipses = plot.dataLayer.selectAll(".ellipse").data(calcEllipses(plot.data, uncertainty));
 
     ellipses.exit().remove();
 
@@ -37,9 +44,9 @@ export const Ellipses = {
         return ellipsePath(d.controlPoints);
       })
       .attr("fill", d => {
-        return d.selected ? plot.options[PlotOption.ELLIPSES_FILL] : "gray";
+        return d.selected ? fill : "gray";
       })
-      .attr("fill-opacity", plot.options[PlotOption.ELLIPSES_OPACITY] * 0.2)
+      .attr("fill-opacity", opacity * 0.2)
       .attr("stroke", "black");
   },
   
@@ -55,7 +62,7 @@ type EllipseDatum = {
   selected: boolean;
 };
 
-function calcEllipses(plot: ScatterPlot): EllipseDatum[] {
+function calcEllipses(data: DataEntry[], uncertainty: number): EllipseDatum[] {
   const k = (4 / 3) * (Math.sqrt(2) - 1);
   const controlPointsBase: ControlPoint[] = [
     [1, 0],
@@ -73,7 +80,7 @@ function calcEllipses(plot: ScatterPlot): EllipseDatum[] {
     [1, 0]
   ];
 
-  const validEntries = plot.data.filter(d => {
+  const validEntries = data.filter(d => {
     return d.sigma_x && d.sigma_y;
   });
 
@@ -91,7 +98,7 @@ function calcEllipses(plot: ScatterPlot): EllipseDatum[] {
 
     return {
       controlPoints: numeric
-        .mul(plot.options.uncertainty, numeric.dot(controlPointsBase, r))
+        .mul(uncertainty as any, numeric.dot(controlPointsBase, r))
         .map(shift(d.x, d.y)) as ControlPoint[],
       selected: d.selected
     };

@@ -1,7 +1,6 @@
 import * as d3 from "d3";
 import AbstractPlot from "./plot-abstract";
-import Variable from "./variable";
-import PlotOption from "./plot-option";
+import { DataEntry, Config, Option } from "./const";
 import { Ellipses } from "../features/ellipses";
 import { Points } from "../features/points";
 import { WetherillConcordia, TeraWasserburgConcordia } from "../features/upb/concordia";
@@ -33,8 +32,8 @@ export default class ScatterPlot extends AbstractPlot {
 
   constructor(
     readonly root: HTMLDivElement,
-    data: { [key in Variable]?: any }[],
-    options: { [key in PlotOption]?: any }
+    data: DataEntry[],
+    options: Config
   ) {
     super(root, data, options);
 
@@ -106,7 +105,7 @@ export default class ScatterPlot extends AbstractPlot {
     super.resize();
 
     this.xLabel
-      .text(this.options[PlotOption.X_AXIS])
+      .text(this.options[Option.X_AXIS])
       .attr(
         "x",
         this.canvasWidth -
@@ -114,7 +113,7 @@ export default class ScatterPlot extends AbstractPlot {
       );
 
     this.yLabel
-      .text(this.options[PlotOption.Y_AXIS])
+      .text(this.options[Option.Y_AXIS])
       .attr(
         "x",
         -(this.yLabel.node() as HTMLElement).getBoundingClientRect().height + "px"
@@ -146,26 +145,26 @@ export default class ScatterPlot extends AbstractPlot {
       .attr("stroke-width", "1px")
       .attr("shape-rendering", "geometricPrecision");
 
-    if (this.options[PlotOption.UNCTBARS]) {
+    if (this.options[Option.UNCTBARS]) {
       UnctBars.draw(this);
     } else {
       UnctBars.undraw(this);
     }
 
-    if (this.options[PlotOption.ELLIPSES]) {
+    if (this.options[Option.ELLIPSES]) {
       Ellipses.draw(this);
     } else {
       Ellipses.undraw(this);
     }
 
-    if (this.options[PlotOption.POINTS]) {
+    if (this.options[Option.POINTS]) {
       Points.draw(this);
     } else {
       Points.undraw(this);
     }
 
-    if (this.options[PlotOption.CONCORDIA_LINE]) {
-      if (this.options[PlotOption.CONCORDIA_TYPE] === "tera-wasserburg") {
+    if (this.options[Option.CONCORDIA_LINE]) {
+      if (this.options[Option.CONCORDIA_TYPE] === "tera-wasserburg") {
         this.features["tera-wasserburg"].draw();
         this.features["wetherill"].undraw();
       } else {
@@ -176,7 +175,7 @@ export default class ScatterPlot extends AbstractPlot {
       this.features["tera-wasserburg"].undraw();
       this.features["wetherill"].undraw();
     }
-    if (this.options[PlotOption.EVOLUTION]) {
+    if (this.options[Option.EVOLUTION]) {
       this.features["evolution"].draw();
     } else {
       this.features["evolution"].undraw();
@@ -195,8 +194,8 @@ export default class ScatterPlot extends AbstractPlot {
     let sigmaX, sigmaY;
     this.data.forEach(d => {
       if (d.selected) {
-        sigmaX = (d.sigma_x || 0) * (this.options.uncertainty || 1);
-        sigmaY = (d.sigma_y || 0) * (this.options.uncertainty || 1);
+        sigmaX = (d.sigma_x || 0) * (this.options[Option.UNCERTAINTY] || 1);
+        sigmaY = (d.sigma_y || 0) * (this.options[Option.UNCERTAINTY] || 1);
         extents[0] = Math.min(extents[0], d.x - sigmaX);
         extents[1] = Math.max(extents[1], d.x + sigmaX);
         extents[2] = Math.min(extents[2], d.y - sigmaY);
@@ -245,8 +244,8 @@ export default class ScatterPlot extends AbstractPlot {
     const xDomain = this.x.scale.domain(),
       xMin = xDomain[0],
       xMax = xDomain[1],
-      lambda235 = this.options[PlotOption.LAMBDA_235],
-      lambda238 = this.options[PlotOption.LAMBDA_238];
+      lambda235 = this.options[Option.LAMBDA_235],
+      lambda238 = this.options[Option.LAMBDA_238];
 
     // calculate the y min and max for the new coordinates
     const tMin = (1 / lambda235) * Math.log(xMin + 1),

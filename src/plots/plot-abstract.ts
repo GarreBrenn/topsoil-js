@@ -1,7 +1,6 @@
 import * as d3 from "d3";
-import { Plot } from "./plot-interfaces";
-import Variable from "./variable";
-import PlotOption from "./plot-option"
+import Plot from "./plot";
+import { DataEntry, Config } from "./const";
 
 export default abstract class AbstractPlot implements Plot {
 
@@ -16,8 +15,8 @@ export default abstract class AbstractPlot implements Plot {
   private _canvasWidth: number;
   private _canvasHeight: number;
 
-  protected _data: { [key in Variable]? : any }[];
-  protected _options: { [key in PlotOption]? : any };
+  protected _data: DataEntry[];
+  protected _options: Config;
 
   readonly svg: d3.Selection<SVGSVGElement>;
   readonly displayContainer: d3.Selection<SVGGElement>;
@@ -30,7 +29,7 @@ export default abstract class AbstractPlot implements Plot {
 
   javaBridge: any | null;
 
-  constructor(readonly root: HTMLDivElement, data: { [key in Variable]? : any }[], options: { [key in PlotOption]? : any }) {
+  constructor(readonly root: HTMLDivElement, data: DataEntry[], options: Config) {
     this._data = data;
     this._options = options;
 
@@ -90,7 +89,7 @@ export default abstract class AbstractPlot implements Plot {
     return this._data;
   }
 
-  set data(data: { [key in Variable]? : any }[]) {
+  set data(data: DataEntry[]) {
     this._data = data;
     this.update();
   }
@@ -103,7 +102,7 @@ export default abstract class AbstractPlot implements Plot {
     return this._options;
   }
 
-  set options(options: { [key in PlotOption]? : any }) {
+  set options(options: Config) {
     this._options = options;
     this.update();
   }

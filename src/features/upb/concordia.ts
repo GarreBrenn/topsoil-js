@@ -1,12 +1,9 @@
-import Vector2D from "../../functions/vector2D";
-import * as numeric from "numeric";
+import { dot, transpose } from "numeric";
 import * as d3 from "d3";
-import ScatterPlot from "../../plots/scatter";
-import PlotOption from "../../plots/plot-option";
-import { cubicBezier, moveTo, lineTo, close } from "../../functions/utils";
-import { PlotFeature } from "../../plots/plot-interfaces";
+import { ScatterPlot, Feature } from "../../plots";
+import { cubicBezier, moveTo, lineTo, close, Vector2D } from "../../utils";
 
-abstract class ConcordiaPlotFeature implements PlotFeature {
+abstract class ConcordiaPlotFeature implements Feature {
   protected tickScale: d3.scale.Linear<number, number> = d3.scale.linear();
 
   constructor(readonly plot: ScatterPlot) {
@@ -49,6 +46,19 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
   }
 
   draw(): void {
+    const {
+      x: { scale: xScale },
+      y: { scale: yScale },
+      options: {
+        lambda_235,
+        lambda_238,
+        concordia_line_fill: lineFill,
+        concordia_line_opacity: lineOpacity,
+        concordia_envelope_fill: envelopeFill,
+        concordia_envelope_opacity: envelopeOpacity
+      }
+    } = this.plot;
+
     let envelope = this.plot.featureLayer.select(".wetherill-envelope");
     if (envelope.empty()) {
       envelope = this.plot.featureLayer
@@ -67,15 +77,12 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
         .attr("shape-rendering", "geometricPrecision");
     }
 
-    const wetherill = new WetherillFns(
-      this.plot.options[PlotOption.LAMBDA_235],
-      this.plot.options[PlotOption.LAMBDA_238]
-    );
+    const wetherill = new WetherillFns(lambda_235, lambda_238);
 
-    const xDomain = this.plot.x.scale.domain(),
+    const xDomain = xScale.domain(),
       xMin = Math.max(0.0, xDomain[0]),
       xMax = Math.min(93.0, xDomain[1]),
-      yDomain = this.plot.y.scale.domain(),
+      yDomain = yScale.domain(),
       yMin = Math.max(0.0, yDomain[0]),
       yMax = Math.min(2.05, yDomain[1]);
 
@@ -104,8 +111,8 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
       newtonMethod(wetherill.lowerEnvelope.y, yMax)
     );
 
-    const startPoint = wetherill.vector(minAge).scaleBy(this.plot.x.scale, this.plot.y.scale);
-    const endPoint = wetherill.vector(maxAge).scaleBy(this.plot.x.scale, this.plot.y.scale);
+    const startPoint = wetherill.vector(minAge).scaleBy(xScale, yScale);
+    const endPoint = wetherill.vector(maxAge).scaleBy(xScale, yScale);
 
     // build the concordia line
     line
@@ -115,11 +122,8 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
         this.addConcordiaToPath(path, wetherill, minAge, maxAge);
         return path.join("");
       })
-      .attr("stroke", this.plot.options[PlotOption.CONCORDIA_LINE_FILL])
-      .attr(
-        "opacity",
-        this.plot.options[PlotOption.CONCORDIA_LINE_OPACITY] || 1
-      )
+      .attr("stroke", lineFill)
+      .attr("opacity", lineOpacity || 1)
       .attr("stroke-width", 2);
 
     // build the uncertainty envelope
@@ -130,7 +134,7 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
           path,
           wetherill.upperEnvelope
             .vector(upperMinAge)
-            .scaleBy(this.plot.x.scale, this.plot.y.scale)
+            .scaleBy(xScale, yScale)
         );
         this.addConcordiaToPath(
           path,
@@ -142,7 +146,7 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
           path,
           wetherill.lowerEnvelope
             .vector(lowerMaxAge)
-            .scaleBy(this.plot.x.scale, this.plot.y.scale)
+            .scaleBy(xScale, yScale)
         );
         this.addConcordiaToPath(
           path,
@@ -153,11 +157,8 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
         close(path);
         return path.join("");
       })
-      .attr("fill", this.plot.options[PlotOption.CONCORDIA_ENVELOPE_FILL])
-      .attr(
-        "opacity",
-        this.plot.options[PlotOption.CONCORDIA_ENVELOPE_OPACITY] || 1
-      );
+      .attr("fill", envelopeFill)
+      .attr("opacity", envelopeOpacity || 1);
 
     const ageDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
     const tickValues = this.tickScale.domain([minAge, maxAge]).ticks(Math.max(3, Math.floor(ageDistance / 100)));
@@ -192,8 +193,8 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
       .attr("class", "wetherill-tick-label");
     tickLabels
       .text(age => age / 1000000)
-      .attr("x", age => this.plot.x.scale(wetherill.x.calculate(age)) + 12)
-      .attr("y", age => this.plot.y.scale(wetherill.y.calculate(age)) + 5);
+      .attr("x", age => xScale(wetherill.x.calculate(age)) + 12)
+      .attr("y", age => yScale(wetherill.y.calculate(age)) + 5);
     tickLabels
       .exit()
       .remove();
@@ -237,6 +238,20 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
   }
 
   draw(): void {
+    const {
+      x: { scale: xScale },
+      y: { scale: yScale },
+      options: {
+        lambda_235,
+        lambda_238,
+        R238_235S,
+        concordia_line_fill: lineFill,
+        concordia_line_opacity: lineOpacity,
+        concordia_envelope_fill: envelopeFill,
+        concordia_envelope_opacity: envelopeOpacity
+      }
+    } = this.plot;
+
     let envelope = this.plot.featureLayer.select(".tw-envelope");
     if (envelope.empty()) {
       envelope = this.plot.featureLayer
@@ -255,28 +270,25 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
         .attr("shape-rendering", "geometricPrecision");
     }
 
-    const lambda235 = this.plot.options[PlotOption.LAMBDA_235],
-      lambda238 = this.plot.options[PlotOption.LAMBDA_238],
-      r238_235s = this.plot.options[PlotOption.R238_235S];
     const teraWasserburg = new TeraWasserburgFns(
-      lambda235,
-      lambda238,
-      r238_235s
+      lambda_235,
+      lambda_238,
+      R238_235S
     );
 
-    const xDomain = this.plot.x.scale.domain(),
+    const xDomain = xScale.domain(),
       xMin = Math.max(1, xDomain[0]),
       xMax = Math.min(6500, xDomain[1]),
-      yDomain = this.plot.y.scale.domain(),
+      yDomain = yScale.domain(),
       yMin = Math.max(0.046, yDomain[0]),
       yMax = Math.min(0.625, yDomain[1]);
 
     const minAge = Math.max(
-      this.constrainAge((Math.log1p(xMax) - Math.log(xMax)) / lambda238),
+      this.constrainAge((Math.log1p(xMax) - Math.log(xMax)) / lambda_238),
       this.constrainAge(teraWasserburg.calculateDate(yMin, 0.0))
     );
     const maxAge = Math.min(
-      this.constrainAge((Math.log1p(xMin) - Math.log(xMin)) / lambda238),
+      this.constrainAge((Math.log1p(xMin) - Math.log(xMin)) / lambda_238),
       this.constrainAge(teraWasserburg.calculateDate(yMax, 0.0))
     );
 
@@ -298,8 +310,8 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
     //   this.constrainAge(newtonMethodTW(teraWasserburg.lowerEnvelope.y, yMax))
     // );
 
-    const startPoint = teraWasserburg.vector(minAge).scaleBy(this.plot.x.scale, this.plot.y.scale);
-    const endPoint = teraWasserburg.vector(maxAge).scaleBy(this.plot.x.scale, this.plot.y.scale);
+    const startPoint = teraWasserburg.vector(minAge).scaleBy(xScale, yScale);
+    const endPoint = teraWasserburg.vector(maxAge).scaleBy(xScale, yScale);
 
     line
       .attr("d", () => {
@@ -308,20 +320,22 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
         this.addConcordiaToPath(path, teraWasserburg, minAge, maxAge);
         return path.join("");
       })
-      .attr("stroke", this.plot.options[PlotOption.CONCORDIA_LINE_FILL])
-      .attr("stroke-width", 2);
+      .attr("stroke", lineFill)
+      .attr("stroke-width", 2)
+      .attr("opacity", lineOpacity || 1);
 
     envelope
       .attr("d", () => {
         const path: (string | number)[] = [];
-        moveTo(path, teraWasserburg.upperEnvelope.vector(minAge).scaleBy(this.plot.x.scale, this.plot.y.scale));
+        moveTo(path, teraWasserburg.upperEnvelope.vector(minAge).scaleBy(xScale, yScale));
         this.addConcordiaToPath(path, teraWasserburg.upperEnvelope, minAge, maxAge);
-        lineTo(path, teraWasserburg.lowerEnvelope.vector(maxAge).scaleBy(this.plot.x.scale, this.plot.y.scale));
+        lineTo(path, teraWasserburg.lowerEnvelope.vector(maxAge).scaleBy(xScale, yScale));
         this.addConcordiaToPath(path, teraWasserburg.lowerEnvelope, maxAge, minAge);
         close(path);
         return path.join("");
       })
-      .attr("fill", this.plot.options[PlotOption.CONCORDIA_ENVELOPE_FILL]);
+      .attr("fill", envelopeFill)
+      .attr("opacity", envelopeOpacity || 1);
 
     const ageDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
     const tickValues = this.tickScale.domain([minAge, maxAge]).ticks(Math.max(3, Math.floor(ageDistance / 100)));
@@ -341,10 +355,10 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
       .style("fill", "white");
     ticks
       .attr("cx", age => {
-        return this.plot.x.scale(teraWasserburg.x.calculate(age));
+        return xScale(teraWasserburg.x.calculate(age));
       })
       .attr("cy", age => {
-        return this.plot.y.scale(teraWasserburg.y.calculate(age));
+        return yScale(teraWasserburg.y.calculate(age));
       });
     
 
@@ -360,8 +374,8 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
       .attr("class", "tw-tick-label");
     tickLabels
       .text(age => age / 1000000)
-      .attr("x", age => this.plot.x.scale(teraWasserburg.x.calculate(age)) + 12)
-      .attr("y", age => this.plot.y.scale(teraWasserburg.y.calculate(age)) + 5);  
+      .attr("x", age => xScale(teraWasserburg.x.calculate(age)) + 12)
+      .attr("y", age => yScale(teraWasserburg.y.calculate(age)) + 5);  
   }
 
   undraw(): void {
@@ -417,23 +431,6 @@ function newtonMethod(fn: ComponentFn, shiftValue?: number): number {
   return x1;
 }
 
-function newtonMethodTW(fn: ComponentFn, shiftValue?: number): number {
-  // bounce around until the derivative at x1 is nonzero
-  let x0,
-    x1 = 400000000000;
-  while (fn.prime(x1) === 0) {
-    x1 -= Math.random();
-  }
-  for (let i = 0; i < 200; i++) {
-    x0 = x1;
-    if (Math.abs(fn.prime(x0)) < Number.EPSILON) {
-      break;
-    }
-    x1 -= (fn.calculate(x0) - shiftValue) / fn.prime(x0);
-  }
-  return x1;
-}
-
 abstract class ConcordiaFns {
   x: ComponentFn;
   y: ComponentFn;
@@ -471,8 +468,7 @@ abstract class ConcordiaFns {
 
   private variance(age: number): number {
     const I_2 = [[1, 0], [0, 1]],
-          dot = numeric.dot,
-          top = dot(dot(dot(dot(dot(I_2, this.v(age)), this.J_xyλ(age)), this.Σ_λ), numeric.transpose(this.J_xyλ(age))), this.v(age)) as number,
+          top = dot(dot(dot(dot(dot(I_2, this.v(age)), this.J_xyλ(age)), this.Σ_λ), transpose(this.J_xyλ(age))), this.v(age)) as number,
           bottom = dot(this.v(age), this.v(age)) as number;
     return top / bottom;
   }

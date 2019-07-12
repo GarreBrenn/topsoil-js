@@ -1,9 +1,13 @@
-import PlotOption from "../plots/plot-option";
-import ScatterPlot from "../plots/scatter";
+import { ScatterPlot } from "../plots";
 
 export const Points = {
 
   draw(plot: ScatterPlot): void {
+    const {
+      points_fill: fill,
+      points_opacity: opacity
+    } = plot.options;
+
     const points = plot.dataLayer.selectAll(".point").data(plot.data);
 
     points.exit().remove();
@@ -15,7 +19,8 @@ export const Points = {
       .attr("r", 2.5);
 
     points
-      .attr("fill", plot.options[PlotOption.POINTS_FILL])
+      .attr("fill", fill)
+      .attr("opacity", opacity || 1)
       .attr("cx", d => plot.x.scale(d.x))
       .attr("cy", d => plot.y.scale(d.y));
   },

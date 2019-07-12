@@ -1,8 +1,6 @@
-import { PlotFeature } from "../../plots/plot-interfaces";
-import ScatterPlot from "../../plots/scatter";
+import { ScatterPlot, Feature } from "../../plots";
 import { add, sub, mul, div, dot } from "numeric";
-import { PlotOption } from "../..";
-import { pluck, moveTo, cubicBezier } from "../../functions/utils";
+import { pluck, moveTo, cubicBezier } from "../../utils";
 
 const INF = Number.MAX_VALUE;
 const isochronAges = [
@@ -36,24 +34,27 @@ type Isochron = {
   yMin: number;
 }
 
-export class EvolutionMatrix implements PlotFeature {
+export class EvolutionMatrix implements Feature {
 
   constructor(readonly plot: ScatterPlot) {
   }
 
   draw(): void {
-    const lambda230 = this.plot.options[PlotOption.LAMBDA_230];
-    const lambda234 = this.plot.options[PlotOption.LAMBDA_234];
-    const lambda238 = this.plot.options[PlotOption.LAMBDA_238];
 
-    const mxp = new EvolutionFns(lambda230, lambda234, lambda238);
+    const {
+      lambda_230,
+      lambda_234,
+      lambda_238
+    } = this.plot.options;
+
+    const mxp = new EvolutionFns(lambda_230, lambda_234, lambda_238);
 
     const isochrons: Isochron[] = isochronAges.map(age => {
       if (age === INF) {
         return {
           age,
-          slope: lambda230 / lambda234 - 1,
-          yIntercept: lambda238 / (lambda230 - lambda238),
+          slope: lambda_230 / lambda_234 - 1,
+          yIntercept: lambda_238 / (lambda_230 - lambda_238),
           xMin: mxp.QUTh[2][0] / mxp.QUTh[0][0],
           yMin: mxp.QUTh[1][0] / mxp.QUTh[0][0]
         };
@@ -79,18 +80,18 @@ export class EvolutionMatrix implements PlotFeature {
 
     ar48iContourValues.forEach((contour, i) => {
       tv[i].forEach((t, j) => {
-        const n0 = [1, contour * lambda238 / lambda234, 0],
+        const n0 = [1, contour * lambda_238 / lambda_234, 0],
           nt = dot(mxp.UTh(t), n0) as number[];
 
-        xy[i][0][j] = nt[2] / nt[0] * lambda230 / lambda238;
-        xy[i][1][j] = nt[1] / nt[0] * lambda234 / lambda238;
+        xy[i][0][j] = nt[2] / nt[0] * lambda_230 / lambda_238;
+        xy[i][1][j] = nt[1] / nt[0] * lambda_234 / lambda_238;
 
-        const dar48dnt1 = -nt[1] / nt[0] / nt[0] * lambda234 / lambda238,
-          dar48dnt2 = 1 / nt[0] * lambda234 / lambda238,
+        const dar48dnt1 = -nt[1] / nt[0] / nt[0] * lambda_234 / lambda_238,
+          dar48dnt2 = 1 / nt[0] * lambda_234 / lambda_238,
           dar48dnt3 = 0,
-          dar08dnt1 = -nt[2] / nt[0] / nt[0] * lambda230 / lambda238,
+          dar08dnt1 = -nt[2] / nt[0] / nt[0] * lambda_230 / lambda_238,
           dar08dnt2 = 0,
-          dar08dnt3 = 1 / nt[0] * lambda230 / lambda238;
+          dar08dnt3 = 1 / nt[0] * lambda_230 / lambda_238;
 
         const dardnt = [[dar08dnt1, dar08dnt2, dar08dnt3], [dar48dnt1, dar48dnt2, dar48dnt3]],
           dntdt = dot(dot(mxp.A, mxp.UTh(t)), n0),
@@ -101,8 +102,8 @@ export class EvolutionMatrix implements PlotFeature {
       });
     });
 
-    const contourXLimits = dot(this.plot.x.scale.domain(), lambda238 / lambda230) as number[],
-      contourYLimits = dot(this.plot.y.scale.domain(), lambda238 / lambda234) as number[];
+    const contourXLimits = dot(this.plot.x.scale.domain(), lambda_238 / lambda_230) as number[],
+      contourYLimits = dot(this.plot.y.scale.domain(), lambda_238 / lambda_234) as number[];
 
     const slopes = pluck(isochrons, "slope"),
       yIntercepts = pluck(isochrons, "yIntercept");
@@ -126,8 +127,8 @@ export class EvolutionMatrix implements PlotFeature {
     yEndpoints[0] = yEndpoints[0].map((y, i) => Math.max(y, isochrons[i].yMin));
 
     // transform into activity ratios, svg plot canvas coordinates
-    xEndpoints = mul(xEndpoints, lambda230 / lambda238);
-    yEndpoints = mul(yEndpoints, lambda234 / lambda238);
+    xEndpoints = mul(xEndpoints, lambda_230 / lambda_238);
+    yEndpoints = mul(yEndpoints, lambda_234 / lambda_238);
 
     const xScale = this.plot.x.scale,
           yScale = this.plot.y.scale;

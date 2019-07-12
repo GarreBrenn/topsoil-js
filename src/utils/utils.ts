@@ -1,4 +1,4 @@
-import * as numeric from "numeric";
+
 import Vector2D from "./vector2D";
 
 export function cubicBezier(
@@ -34,12 +34,3 @@ export function pluck<T>(maps: { [key: string]: any }[], key: string) {
   });
   return values;
 }
-
-// math functions
-// export const add = numeric.add;
-// export const div = numeric.div;
-// export const mul = numeric.mul;
-// export const sub = numeric.sub;
-// export const exp = Math.exp;
-// export const dot = numeric.dot;
-// export const neg = numeric.neg;

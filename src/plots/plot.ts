@@ -1,8 +1,7 @@
 import * as d3 from "d3";
-import PlotOption from "./plot-option";
-import Variable from "./variable";
+import { DataEntry, Config } from "./const";
 
-export interface Plot {
+export default interface Plot {
 
   readonly root: HTMLDivElement;
   readonly canvas: d3.Selection<SVGGElement>;
@@ -13,20 +12,11 @@ export interface Plot {
   readonly canvasWidth: number;
   readonly canvasHeight: number;
 
-  data: { [key in Variable]? : any }[];
-  options: { [key in PlotOption]? : any };
+  data: DataEntry[];
+  options: Config;
 
   javaBridge: any | null;
 
   update(): void;
   
-}
-
-export interface PlotFeature {
-
-  readonly plot: Plot;
-
-  draw(): void;
-  undraw(): void;
-
 }
