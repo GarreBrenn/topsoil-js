@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Title</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      #container {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+    <script src="topsoil.js"></script>
+    <script type="text/javascript">
+      const PlotOption = topsoil.Option;
+      const root = d3.select("#container").node();
+      const data = [
+        { x: 0.787174467, y: 1.112997105, sigma_x: 0.002472973, sigma_y: 0.004812142, rho: 0, selected: true },
+        { x: 0.785279872, y: 1.104535717, sigma_x: 0.003488836, sigma_y: 0.003504504, rho: 0, selected: true }
+      ];
+      const options = {};
+      options[PlotOption.TITLE] = "Hello World";
+      options[PlotOption.UNCERTAINTY] = 2.0;
+      options[PlotOption.X_AXIS] = "X Axis";
+      options[PlotOption.Y_AXIS] = "Y Axis";
+      options[PlotOption.POINTS] = true;
+      options[PlotOption.POINTS_FILL] = "blue";
+      options[PlotOption.POINTS_OPACITY] = 1.0;
+      options[PlotOption.ELLIPSES] = false;
+      options[PlotOption.ELLIPSES_FILL] = "red";
+      options[PlotOption.ELLIPSES_OPACITY] = 1.0;
+      options[PlotOption.UNCTBARS] = true;
+      options[PlotOption.UNCTBARS_FILL] = "black";
+      options[PlotOption.UNCTBARS_OPACITY] = 1.0;
+
+      options[PlotOption.EVOLUTION] = true;
+
+      options[PlotOption.LAMBDA_230] = 9.1705E-6;
+      options[PlotOption.LAMBDA_234] = 2.82206E-6;
+      options[PlotOption.LAMBDA_238] = 1.55125e-10;
+
+      const scatterPlot = new topsoil.ScatterPlot(root, data, options);
+    </script>
+  </body>
+</html>

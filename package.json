@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "./dist/topsoil.js",
-  "types": "./@types/index.d.ts",
   "scripts": {
     "build": "webpack",
     "start:dev": "webpack-dev-server"

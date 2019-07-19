@@ -4,7 +4,9 @@ module.exports = {
   output: {
     path: __dirname + "/dist",
     filename: "topsoil.js",
-    library: "topsoil"
+    library: "topsoil",
+    libraryTarget: "umd",
+    umdNamedDefine: true
   },
   devtool: "source-map",
   devServer: {

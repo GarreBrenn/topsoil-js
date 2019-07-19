@@ -7,6 +7,7 @@ export const UnctBars = {
     const {
       x: { scale: xScale },
       y: { scale: yScale },
+      data,
       options: {
         uncertainty,
         unctbars_fill: fill,
@@ -14,12 +15,16 @@ export const UnctBars = {
       }
     } = plot;
 
+    const validEntries = data.filter(d => {
+      return d.sigma_x && d.sigma_y;
+    });
+
     const unctBars = plot.dataLayer.selectAll(".unct-bars-g")
-      .data(plot.data);
+      .data(validEntries);
 
     unctBars.exit().remove();
 
-    const enterGroup = unctBars.enter().append("g").data(plot.data)
+    const enterGroup = unctBars.enter().append("g").data(validEntries)
       .attr("class", "unct-bars-g")
       .attr("opacity", opacity);
     

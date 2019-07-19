@@ -1,5 +1,14 @@
-var topsoil =
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define("topsoil", [], factory);
+	else if(typeof exports === 'object')
+		exports["topsoil"] = factory();
+	else
+		root["topsoil"] = factory();
+})(window, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -14263,11 +14272,14 @@ exports.Points = {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnctBars = {
     draw(plot) {
-        const { x: { scale: xScale }, y: { scale: yScale }, options: { uncertainty, unctbars_fill: fill, unctbars_opacity: opacity } } = plot;
+        const { x: { scale: xScale }, y: { scale: yScale }, data, options: { uncertainty, unctbars_fill: fill, unctbars_opacity: opacity } } = plot;
+        const validEntries = data.filter(d => {
+            return d.sigma_x && d.sigma_y;
+        });
         const unctBars = plot.dataLayer.selectAll(".unct-bars-g")
-            .data(plot.data);
+            .data(validEntries);
         unctBars.exit().remove();
-        const enterGroup = unctBars.enter().append("g").data(plot.data)
+        const enterGroup = unctBars.enter().append("g").data(validEntries)
             .attr("class", "unct-bars-g")
             .attr("opacity", opacity);
         enterGroup.append("line").attr("class", "unct-bars-h-line");
@@ -15303,8 +15315,8 @@ class AbstractPlot {
             .attr("stroke-width", "2px");
         this.featureLayer = this.canvas.append("g");
         this.dataLayer = this.canvas.append("g");
-        this.root.addEventListener("resize", () => this.update());
-        window.addEventListener("resize", () => this.update());
+        this.root.addEventListener("resize", () => this.update(), true);
+        window.addEventListener("resize", () => this.update(), true);
     }
     get data() {
         return this._data;
@@ -15658,4 +15670,5 @@ exports.default = Vector2D;
 /***/ })
 
 /******/ });
+});
 //# sourceMappingURL=topsoil.js.map
