@@ -20,6 +20,7 @@ export default class ScatterPlot extends AbstractPlot {
         scale: d3.scale.Linear<number, number>;
     };
     private zoom;
+    onZoom: Function;
     private xLabel;
     private xAxisG;
     private yLabel;

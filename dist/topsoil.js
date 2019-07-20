@@ -15439,7 +15439,10 @@ class ScatterPlot extends plot_abstract_1.default {
             .zoom()
             .x(this.x.scale)
             .y(this.y.scale);
-        this.zoom.on("zoom", () => this.update());
+        this.zoom.on("zoom", () => {
+            this.update();
+            this.onZoom(this);
+        });
         this.canvas.call(this.zoom);
         this.features["wetherill"] = new concordia_1.WetherillConcordia(this);
         this.features["tera-wasserburg"] = new concordia_1.TeraWasserburgConcordia(this);

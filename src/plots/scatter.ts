@@ -24,6 +24,7 @@ export default class ScatterPlot extends AbstractPlot {
   y: { axis: d3.svg.Axis; scale: d3.scale.Linear<number, number> };
 
   private zoom: d3.behavior.Zoom<any>;
+  onZoom: Function;
 
   private xLabel: d3.Selection<SVGElement>;
   private xAxisG: d3.Selection<SVGGElement>;
@@ -91,7 +92,10 @@ export default class ScatterPlot extends AbstractPlot {
       .zoom()
       .x(this.x.scale)
       .y(this.y.scale);
-    this.zoom.on("zoom", () => this.update());
+    this.zoom.on("zoom", () => {
+      this.update();
+      this.onZoom(this);
+    });
     this.canvas.call(this.zoom);
 
     this.features["wetherill"] = new WetherillConcordia(this);
