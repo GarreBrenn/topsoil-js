@@ -1,6 +1,9 @@
-import { ScatterPlot, Feature } from "../../plots";
+import { ScatterPlot, FeatureInterface, findLayer, Feature } from "../../plots";
 import { add, sub, mul, div, dot } from "numeric";
 import { pluck, moveTo, cubicBezier } from "../../utils";
+
+const ISOCHRON_CLASS = "matrix-isochron",
+      CONTOUR_CLASS = "matrix-contour";
 
 const INF = Number.MAX_VALUE;
 const isochronAges = [
@@ -34,18 +37,23 @@ type Isochron = {
   yMin: number;
 }
 
-export class EvolutionMatrix implements Feature {
+export class EvolutionMatrix implements FeatureInterface {
 
-  constructor(readonly plot: ScatterPlot) {
-  }
-
-  draw(): void {
+  draw(plot: ScatterPlot): void {
 
     const {
-      lambda_230,
-      lambda_234,
-      lambda_238
-    } = this.plot.options;
+      x: {
+        scale: xScale
+      },
+      y: {
+        scale: yScale
+      },
+      options: {
+        lambda_230,
+        lambda_234,
+        lambda_238
+      }
+    } = plot;
 
     const mxp = new EvolutionFns(lambda_230, lambda_234, lambda_238);
 
@@ -102,8 +110,8 @@ export class EvolutionMatrix implements Feature {
       });
     });
 
-    const contourXLimits = dot(this.plot.x.scale.domain(), lambda_238 / lambda_230) as number[],
-      contourYLimits = dot(this.plot.y.scale.domain(), lambda_238 / lambda_234) as number[];
+    const contourXLimits = dot(xScale.domain(), lambda_238 / lambda_230) as number[],
+      contourYLimits = dot(yScale.domain(), lambda_238 / lambda_234) as number[];
 
     const slopes = pluck(isochrons, "slope"),
       yIntercepts = pluck(isochrons, "yIntercept");
@@ -130,14 +138,13 @@ export class EvolutionMatrix implements Feature {
     xEndpoints = mul(xEndpoints, lambda_230 / lambda_238);
     yEndpoints = mul(yEndpoints, lambda_234 / lambda_238);
 
-    const xScale = this.plot.x.scale,
-          yScale = this.plot.y.scale;
+    const layerToDrawOn = findLayer(plot, Feature.EVOLUTION);
 
-    const isochronLines = this.plot.featureLayer.selectAll(".matrix-isochron")
+    const isochronLines = layerToDrawOn.selectAll("." + ISOCHRON_CLASS)
       .data(isochrons);
     isochronLines.enter()
       .append("line")
-      .attr("class", "matrix-isochron")
+      .attr("class", ISOCHRON_CLASS)
       .attr("stroke", "red");
     isochronLines
       .attr("x1", (isochron, i) => xScale(xEndpoints[0][i]))
@@ -147,11 +154,11 @@ export class EvolutionMatrix implements Feature {
     isochronLines.exit()
       .remove();
 
-    const contourPaths = this.plot.featureLayer.selectAll(".matrix-contour")
+    const contourPaths = layerToDrawOn.selectAll("." + CONTOUR_CLASS)
       .data(ar48iContourValues);
     contourPaths.enter()
       .append('path')
-      .attr('class', 'matrix-contour')
+      .attr('class', CONTOUR_CLASS)
       .attr('fill', 'none')
       .attr('stroke', 'blue');
     contourPaths
@@ -182,9 +189,11 @@ export class EvolutionMatrix implements Feature {
     
   }
 
-  undraw(): void {
-    this.plot.featureLayer.selectAll(".matrix-isochron").remove()
-    this.plot.featureLayer.selectAll(".matrix-contour").remove();
+  undraw(plot: ScatterPlot): void {
+    const layerToDrawOn = findLayer(plot, Feature.EVOLUTION);
+
+    layerToDrawOn.selectAll("." + ISOCHRON_CLASS).remove()
+    layerToDrawOn.selectAll("." + CONTOUR_CLASS).remove();
   }
 
 }
@@ -285,16 +294,6 @@ function mean(arr: number[]) {
   }
   return mean / arr.length;
 }
-
-// function find(arr: number[]): number[] {
-//   const result: number[] = [];
-//   for (let i = 0; i < arr.length; i++) {
-//     if (arr[i] !== 0) {
-//       result.push(i);
-//     }
-//   }
-//   return result;
-// }
 
 function select(indexes: number[], arr: number[]): number[] {
   const result: number[] = [];

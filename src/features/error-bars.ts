@@ -1,6 +1,14 @@
-import { ScatterPlot } from "../plots";
+import { ScatterPlot, findLayer, Feature } from "../plots";
 
-export const UnctBars = {
+const G_CLASS = "error-bars-g",
+      H_LINE_CLASS = "error-bars-h-line",
+      V_LINE_CLASS = "error-bars-v-line",
+      T_CAP_CLASS = "error-bars-t-cap",
+      R_CAP_CLASS = "error-bars-r-cap",
+      B_CAP_CLASS = "error-bars-b-cap",
+      L_CAP_CLASS = "error-bars-l-cap";
+
+export const ErrorBars = {
   
   draw(plot: ScatterPlot) {
 
@@ -10,69 +18,71 @@ export const UnctBars = {
       data,
       options: {
         uncertainty,
-        unctbars_fill: fill,
-        unctbars_opacity: opacity
+        error_bars_fill: fill,
+        error_bars_opacity: opacity
       }
     } = plot;
+
+    const layerToDrawOn = findLayer(plot, Feature.ERROR_BARS);
 
     const validEntries = data.filter(d => {
       return d.sigma_x && d.sigma_y;
     });
 
-    const unctBars = plot.dataLayer.selectAll(".unct-bars-g")
+    const unctBars = layerToDrawOn.selectAll("." + G_CLASS)
       .data(validEntries);
 
     unctBars.exit().remove();
 
     const enterGroup = unctBars.enter().append("g").data(validEntries)
-      .attr("class", "unct-bars-g")
+      .attr("class", G_CLASS)
       .attr("opacity", opacity);
     
-    enterGroup.append("line").attr("class", "unct-bars-h-line");
-    enterGroup.append("line").attr("class", "unct-bars-v-line");
-    enterGroup.append("line").attr("class", "unct-bars-t-cap");
-    enterGroup.append("line").attr("class", "unct-bars-r-cap");
-    enterGroup.append("line").attr("class", "unct-bars-b-cap");
-    enterGroup.append("line").attr("class", "unct-bars-l-cap");
+    enterGroup.append("line").attr("class", H_LINE_CLASS);
+    enterGroup.append("line").attr("class", V_LINE_CLASS);
+    enterGroup.append("line").attr("class", T_CAP_CLASS);
+    enterGroup.append("line").attr("class", R_CAP_CLASS);
+    enterGroup.append("line").attr("class", B_CAP_CLASS);
+    enterGroup.append("line").attr("class", L_CAP_CLASS);
 
     const strokeWidth = (opacity < 1) ? 2 : 1;
 
-    unctBars.selectAll(".unct-bars-h-line")
+    unctBars.selectAll("." + H_LINE_CLASS)
       .attr("x1", d => xScale(d.x - (uncertainty * d.sigma_x)))
       .attr("y1", d => yScale(d.y))
       .attr("x2", d => xScale(d.x + (uncertainty * d.sigma_x)))
       .attr("y2", d => yScale(d.y))
       .attr("stroke-width", strokeWidth)
       .attr("stroke", fill);
-    unctBars.selectAll(".unct-bars-v-line")
+    unctBars.selectAll("." + V_LINE_CLASS)
       .attr("x1", d => xScale(d.x))
       .attr("y1", d => yScale(d.y - (uncertainty * d.sigma_y)))
       .attr("x2", d => xScale(d.x))
       .attr("y2", d => yScale(d.y + (uncertainty * d.sigma_y)))
       .attr("stroke-width", strokeWidth)
       .attr("stroke", fill);
-    unctBars.selectAll(".unct-bars-t-cap")
+    unctBars.selectAll("." + T_CAP_CLASS)
       .attr("x1", d => xScale(d.x - 0.2 * (uncertainty * d.sigma_x)))
       .attr("y1", d => yScale(d.y + (uncertainty * d.sigma_y)))
       .attr("x2", d => xScale(d.x + 0.2 * (uncertainty * d.sigma_x)))
       .attr("y2", d => yScale(d.y + (uncertainty * d.sigma_y)))
       .attr("stroke-width", strokeWidth)
       .attr("stroke", fill);
-    unctBars.selectAll(".unct-bars-r-cap")
+    unctBars.selectAll("." + R_CAP_CLASS)
       .attr("x1", d => xScale(d.x + (uncertainty * d.sigma_x)))
       .attr("y1", d => yScale(d.y - 0.2*(uncertainty * d.sigma_y)))
       .attr("x2", d => xScale(d.x + (uncertainty * d.sigma_x)))
       .attr("y2", d => yScale(d.y + 0.2*(uncertainty * d.sigma_y)))
       .attr("stroke-width", strokeWidth)
       .attr("stroke", fill);
-    unctBars.selectAll(".unct-bars-b-cap")
+    unctBars.selectAll("." + B_CAP_CLASS)
       .attr("x1", d => xScale(d.x - 0.2 * (uncertainty * d.sigma_x)))
       .attr("y1", d => yScale(d.y - (uncertainty * d.sigma_y)))
       .attr("x2", d => xScale(d.x + 0.2 * (uncertainty * d.sigma_x)))
       .attr("y2", d => yScale(d.y - (uncertainty * d.sigma_y)))
       .attr("stroke-width", strokeWidth)
       .attr("stroke", fill);
-    unctBars.selectAll(".unct-bars-l-cap")
+    unctBars.selectAll("." + L_CAP_CLASS)
       .attr("x1", d => xScale(d.x - (uncertainty * d.sigma_x)))
       .attr("y1", d => yScale(d.y - 0.2*(uncertainty * d.sigma_y)))
       .attr("x2", d => xScale(d.x - (uncertainty * d.sigma_x)))
@@ -83,7 +93,9 @@ export const UnctBars = {
   },
 
   undraw(plot: ScatterPlot) {
-    plot.dataLayer.selectAll(".unct-bars-g").remove();
+    const layerToDrawOn = findLayer(plot, Feature.ERROR_BARS);
+    
+    layerToDrawOn.selectAll("." + G_CLASS).remove();
   }
 
 }

@@ -1,1 +1,1 @@
-export * from "./plots";
+export { ScatterPlot, Variable, Option, Feature } from "./plots";

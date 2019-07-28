@@ -5,7 +5,10 @@ import { Ellipses } from "../features/ellipses";
 import { Points } from "../features/points";
 import { WetherillConcordia, TeraWasserburgConcordia } from "../features/upb/concordia";
 import { EvolutionMatrix } from "../features/uth/evolution";
-import { UnctBars } from "../features/unct-bars";
+import { ErrorBars } from "../features/error-bars";
+import { LayerDefinition } from "./plot";
+
+const AXIS_CLASS = "axis";
 
 export default class ScatterPlot extends AbstractPlot {
 
@@ -34,13 +37,14 @@ export default class ScatterPlot extends AbstractPlot {
   constructor(
     readonly root: HTMLDivElement,
     data: DataEntry[],
-    options: Config
+    options: Config,
+    layers?: LayerDefinition
   ) {
-    super(root, data, options);
+    super(root, data, options, layers);
 
     this.xAxisG = this.displayContainer
       .append("g") // x axis container
-      .attr("class", "axis");
+      .attr("class", AXIS_CLASS);
 
     this.xLabel = this.xAxisG
       .append("text") // x axis label
@@ -51,7 +55,7 @@ export default class ScatterPlot extends AbstractPlot {
 
     this.yAxisG = this.displayContainer
       .append("g") // y axis container
-      .attr("class", "axis");
+      .attr("class", AXIS_CLASS);
 
     this.yLabel = this.yAxisG
       .append("text") // y axis label
@@ -100,9 +104,9 @@ export default class ScatterPlot extends AbstractPlot {
     });
     this.canvas.call(this.zoom);
 
-    this.features["wetherill"] = new WetherillConcordia(this);
-    this.features["tera-wasserburg"] = new TeraWasserburgConcordia(this);
-    this.features["evolution"] = new EvolutionMatrix(this);
+    this.features["wetherill"] = new WetherillConcordia();
+    this.features["tera-wasserburg"] = new TeraWasserburgConcordia();
+    this.features["evolution"] = new EvolutionMatrix();
 
     this.update();
   }
@@ -141,20 +145,20 @@ export default class ScatterPlot extends AbstractPlot {
     this.resize();
 
     this.displayContainer
-      .selectAll(".axis text")
+      .selectAll(`.${AXIS_CLASS} text`)
       .attr("font-family", "sans-serif")
       .attr("font-size", "10px");
     this.displayContainer
-      .selectAll(".axis path, .axis line")
+      .selectAll(`.${AXIS_CLASS} path, .${AXIS_CLASS} line`)
       .attr("fill", "none")
       .attr("stroke", "black")
       .attr("stroke-width", "1px")
       .attr("shape-rendering", "geometricPrecision");
 
-    if (this.options[Option.UNCTBARS]) {
-      UnctBars.draw(this);
+    if (this.options[Option.ERROR_BARS]) {
+      ErrorBars.draw(this);
     } else {
-      UnctBars.undraw(this);
+      ErrorBars.undraw(this);
     }
 
     if (this.options[Option.ELLIPSES]) {
@@ -171,20 +175,20 @@ export default class ScatterPlot extends AbstractPlot {
 
     if (this.options[Option.CONCORDIA_LINE]) {
       if (this.options[Option.CONCORDIA_TYPE] === "tera-wasserburg") {
-        this.features["tera-wasserburg"].draw();
-        this.features["wetherill"].undraw();
+        this.features["tera-wasserburg"].draw(this);
+        this.features["wetherill"].undraw(this);
       } else {
-        this.features["wetherill"].draw();
-        this.features["tera-wasserburg"].undraw();
+        this.features["wetherill"].draw(this);
+        this.features["tera-wasserburg"].undraw(this);
       }
     } else {
-      this.features["tera-wasserburg"].undraw();
-      this.features["wetherill"].undraw();
+      this.features["tera-wasserburg"].undraw(this);
+      this.features["wetherill"].undraw(this);
     }
     if (this.options[Option.EVOLUTION]) {
-      this.features["evolution"].draw();
+      this.features["evolution"].draw(this);
     } else {
-      this.features["evolution"].undraw();
+      this.features["evolution"].undraw(this);
     }
 
     // Make upcalls to Java if bridge exists

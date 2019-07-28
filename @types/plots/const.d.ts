@@ -1,15 +1,9 @@
-import Plot from "./plot";
 export declare type DataEntry = {
     [key in Variable]?: any;
 };
 export declare type Config = {
     [key in Option]?: any;
 };
-export interface Feature {
-    readonly plot: Plot;
-    draw(): void;
-    undraw(): void;
-}
 export declare const enum Variable {
     LABEL = "label",
     X = "x",
@@ -41,9 +35,9 @@ export declare const enum Option {
     ELLIPSES = "ellipses",
     ELLIPSES_FILL = "ellipses_fill",
     ELLIPSES_OPACITY = "ellipses_opacity",
-    UNCTBARS = "unctbars",
-    UNCTBARS_FILL = "unctbars_fill",
-    UNCTBARS_OPACITY = "unctbars_opacity",
+    ERROR_BARS = "error_bars",
+    ERROR_BARS_FILL = "error_bars_fill",
+    ERROR_BARS_OPACITY = "error_bars_opacity",
     MCLEAN_REGRESSION = "regression_mclean",
     MCLEAN_REGRESSION_ENVELOPE = "regression_mclean_envelope",
     CONCORDIA_TYPE = "concordia_type",
@@ -53,5 +47,12 @@ export declare const enum Option {
     CONCORDIA_ENVELOPE = "concordia_envelope",
     CONCORDIA_ENVELOPE_FILL = "concordia_envelope_fill",
     CONCORDIA_ENVELOPE_OPACITY = "concordia_envelope_opacity",
+    EVOLUTION = "evolution"
+}
+export declare enum Feature {
+    POINTS = "points",
+    ELLIPSES = "ellipses",
+    ERROR_BARS = "unctbars",
+    CONCORDIA = "concordia",
     EVOLUTION = "evolution"
 }

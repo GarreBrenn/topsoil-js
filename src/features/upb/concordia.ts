@@ -1,22 +1,21 @@
 import { dot, transpose } from "numeric";
 import * as d3 from "d3";
-import { ScatterPlot, Feature } from "../../plots";
+import { ScatterPlot, Feature, FeatureInterface, findLayer } from "../../plots";
 import { cubicBezier, moveTo, lineTo, close, Vector2D } from "../../utils";
 
-abstract class ConcordiaPlotFeature implements Feature {
+abstract class ConcordiaPlotFeature implements FeatureInterface {
   protected tickScale: d3.scale.Linear<number, number> = d3.scale.linear();
 
-  constructor(readonly plot: ScatterPlot) {
-  }
-
-  abstract draw(): void;
-  abstract undraw(): void;
+  abstract draw(plot: ScatterPlot): void;
+  abstract undraw(plot: ScatterPlot): void;
 
   protected addConcordiaToPath(
     path: (string | number)[],
     concordia: ConcordiaFns | EnvelopeFn,
     startAge: number,
-    endAge: number
+    endAge: number,
+    xScale: d3.scale.Linear<number, number>,
+    yScale: d3.scale.Linear<number, number>
   ) {
     // determine the step size using the number of pieces
     const pieces = 30;
@@ -27,7 +26,9 @@ abstract class ConcordiaPlotFeature implements Feature {
         path,
         concordia,
         startAge + (stepSize * i),
-        startAge + (stepSize * (i + 1))
+        startAge + (stepSize * (i + 1)),
+        xScale,
+        yScale
       );
     }
   }
@@ -36,16 +37,20 @@ abstract class ConcordiaPlotFeature implements Feature {
     path: (string | number)[],
     concordia: ConcordiaFns | EnvelopeFn,
     startAge: number,
-    endAge: number
+    endAge: number,
+    xScale: d3.scale.Linear<number, number>,
+    yScale: d3.scale.Linear<number, number>
   ): void;
 }
 
 export class WetherillConcordia extends ConcordiaPlotFeature {
-  constructor(readonly plot: ScatterPlot) {
-    super(plot);
-  }
 
-  draw(): void {
+  private static readonly LINE_CLASS = "wetherill-line";
+  private static readonly ENVELOPE_CLASS ="wetherill-envelope";
+  private static readonly TICK_CLASS = "wetherill-tick";
+  private static readonly TICK_LABEL_CLASS = "wetherill-tick-label";
+
+  draw(plot: ScatterPlot): void {
     const {
       x: { scale: xScale },
       y: { scale: yScale },
@@ -57,22 +62,24 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
         concordia_envelope_fill: envelopeFill,
         concordia_envelope_opacity: envelopeOpacity
       }
-    } = this.plot;
+    } = plot;
 
-    let envelope = this.plot.featureLayer.select(".wetherill-envelope");
+    const layerToDrawOn = findLayer(plot, Feature.CONCORDIA);
+
+    let envelope = layerToDrawOn.select("." + WetherillConcordia.ENVELOPE_CLASS);
     if (envelope.empty()) {
-      envelope = this.plot.featureLayer
+      envelope = layerToDrawOn
         .append("path")
-        .attr("class", "wetherill-envelope")
+        .attr("class", WetherillConcordia.ENVELOPE_CLASS)
         .attr("stroke", "none")
         .attr("shape-rendering", "geometricPrecision");
     }
 
-    let line = this.plot.featureLayer.select(".wetherill-line");
+    let line = layerToDrawOn.select("." + WetherillConcordia.LINE_CLASS);
     if (line.empty()) {
-      line = this.plot.featureLayer
+      line = layerToDrawOn
         .append("path")
-        .attr("class", "wetherill-line")
+        .attr("class", WetherillConcordia.LINE_CLASS)
         .attr("fill", "none")
         .attr("shape-rendering", "geometricPrecision");
     }
@@ -119,7 +126,7 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
       .attr("d", () => {
         const path: (string | number)[] = [];
         moveTo(path, startPoint);
-        this.addConcordiaToPath(path, wetherill, minAge, maxAge);
+        this.addConcordiaToPath(path, wetherill, minAge, maxAge, xScale, yScale);
         return path.join("");
       })
       .attr("stroke", lineFill)
@@ -140,7 +147,9 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
           path,
           wetherill.upperEnvelope,
           upperMinAge,
-          upperMaxAge
+          upperMaxAge,
+          xScale,
+          yScale
         );
         lineTo(
           path,
@@ -152,7 +161,9 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
           path,
           wetherill.lowerEnvelope,
           lowerMaxAge,
-          lowerMinAge
+          lowerMinAge,
+          xScale,
+          yScale
         );
         close(path);
         return path.join("");
@@ -163,34 +174,34 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
     const ageDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
     const tickValues = this.tickScale.domain([minAge, maxAge]).ticks(Math.max(3, Math.floor(ageDistance / 100)));
 
-    const ticks = this.plot.featureLayer.selectAll(".wetherill-tick")
+    const ticks = layerToDrawOn.selectAll("." + WetherillConcordia.TICK_CLASS)
       .data(tickValues);
     ticks
       .enter()
       .append("circle")
-      .attr("class", "wetherill-tick")
+      .attr("class", WetherillConcordia.TICK_CLASS)
       .attr("r", 5)
       .style("stroke-width", 2)
       .style("stroke", "black")
       .style("fill", "white");
     ticks
       .attr("cx", tick => {
-        return this.plot.x.scale(wetherill.x.calculate(tick));
+        return xScale(wetherill.x.calculate(tick));
       })
       .attr("cy", tick => {
-        return this.plot.y.scale(wetherill.y.calculate(tick));
+        return yScale(wetherill.y.calculate(tick));
       });
     ticks
       .exit()
       .remove();
 
-    const tickLabels = this.plot.featureLayer.selectAll(".wetherill-tick-label")
+    const tickLabels = layerToDrawOn.selectAll("." + WetherillConcordia.TICK_LABEL_CLASS)
       .data(tickValues);
     tickLabels
       .enter()
       .append("text")
       .attr("font-family", "sans-serif")
-      .attr("class", "wetherill-tick-label");
+      .attr("class", WetherillConcordia.TICK_LABEL_CLASS);
     tickLabels
       .text(age => age / 1000000)
       .attr("x", age => xScale(wetherill.x.calculate(age)) + 12)
@@ -201,31 +212,35 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
 
   }
 
-  undraw(): void {
-    this.plot.featureLayer.selectAll(".wetherill-line").remove();
-    this.plot.featureLayer.selectAll(".wetherill-envelope").remove();
-    this.plot.featureLayer.selectAll(".wetherill-tick").remove();
-    this.plot.featureLayer.selectAll(".wetherill-tick-label").remove();
+  undraw(plot: ScatterPlot): void {
+    const layerToDrawOn = findLayer(plot, Feature.CONCORDIA);
+
+    layerToDrawOn.selectAll("." + WetherillConcordia.LINE_CLASS).remove();
+    layerToDrawOn.selectAll("." + WetherillConcordia.ENVELOPE_CLASS).remove();
+    layerToDrawOn.selectAll("." + WetherillConcordia.TICK_CLASS).remove();
+    layerToDrawOn.selectAll("." + WetherillConcordia.TICK_LABEL_CLASS).remove();
   }
 
   protected approximateSegment(
     path: (string | number)[],
     concordia: ConcordiaFns | EnvelopeFn,
     startAge: number,
-    endAge: number
+    endAge: number,
+    xScale: d3.scale.Linear<number, number>,
+    yScale: d3.scale.Linear<number, number>
   ): void {
     const ageRange = endAge - startAge;
     const p1 = concordia
       .vector(startAge)
       .plus(concordia.prime(startAge).times(ageRange / 3))
-      .scaleBy(this.plot.x.scale, this.plot.y.scale);
+      .scaleBy(xScale, yScale);
     const p2 = concordia
       .vector(endAge)
       .minus(concordia.prime(endAge).times(ageRange / 3))
-      .scaleBy(this.plot.x.scale, this.plot.y.scale);
+      .scaleBy(xScale, yScale);
     const p3 = concordia
       .vector(endAge)
-      .scaleBy(this.plot.x.scale, this.plot.y.scale);
+      .scaleBy(xScale, yScale);
 
     cubicBezier(path, p1, p2, p3);
   }
@@ -233,11 +248,7 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
 
 export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
 
-  constructor(readonly plot: ScatterPlot) {
-    super(plot);
-  }
-
-  draw(): void {
+  draw(plot: ScatterPlot): void {
     const {
       x: { scale: xScale },
       y: { scale: yScale },
@@ -250,20 +261,22 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
         concordia_envelope_fill: envelopeFill,
         concordia_envelope_opacity: envelopeOpacity
       }
-    } = this.plot;
+    } = plot;
 
-    let envelope = this.plot.featureLayer.select(".tw-envelope");
+    const layerToDrawOn = findLayer(plot, Feature.CONCORDIA);
+
+    let envelope = layerToDrawOn.select(".tw-envelope");
     if (envelope.empty()) {
-      envelope = this.plot.featureLayer
+      envelope = layerToDrawOn
         .append("path")
         .attr("class", "tw-envelope")
         .attr("stroke", "none")
         .attr("shape-rendering", "geometricPrecision");
     }
 
-    let line = this.plot.featureLayer.select(".tw-line")
+    let line = layerToDrawOn.select(".tw-line")
     if (line === null || line.empty()) {
-      line = this.plot.featureLayer
+      line = layerToDrawOn
         .append("path")
         .attr("class", "tw-line")
         .attr("fill", "none")
@@ -317,7 +330,7 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
       .attr("d", () => {
         const path: (string | number)[] = [];
         moveTo(path, startPoint);
-        this.addConcordiaToPath(path, teraWasserburg, minAge, maxAge);
+        this.addConcordiaToPath(path, teraWasserburg, minAge, maxAge, xScale, yScale);
         return path.join("");
       })
       .attr("stroke", lineFill)
@@ -328,9 +341,9 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
       .attr("d", () => {
         const path: (string | number)[] = [];
         moveTo(path, teraWasserburg.upperEnvelope.vector(minAge).scaleBy(xScale, yScale));
-        this.addConcordiaToPath(path, teraWasserburg.upperEnvelope, minAge, maxAge);
+        this.addConcordiaToPath(path, teraWasserburg.upperEnvelope, minAge, maxAge, xScale, yScale);
         lineTo(path, teraWasserburg.lowerEnvelope.vector(maxAge).scaleBy(xScale, yScale));
-        this.addConcordiaToPath(path, teraWasserburg.lowerEnvelope, maxAge, minAge);
+        this.addConcordiaToPath(path, teraWasserburg.lowerEnvelope, maxAge, minAge, xScale, yScale);
         close(path);
         return path.join("");
       })
@@ -340,7 +353,7 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
     const ageDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
     const tickValues = this.tickScale.domain([minAge, maxAge]).ticks(Math.max(3, Math.floor(ageDistance / 100)));
 
-    const ticks = this.plot.featureLayer.selectAll(".tw-tick")
+    const ticks = layerToDrawOn.selectAll(".tw-tick")
       .data(tickValues);
     ticks
       .exit()
@@ -362,7 +375,7 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
       });
     
 
-    const tickLabels = this.plot.featureLayer.selectAll(".tw-tick-label")
+    const tickLabels = layerToDrawOn.selectAll(".tw-tick-label")
       .data(tickValues);
     tickLabels
       .exit()
@@ -378,32 +391,36 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
       .attr("y", age => yScale(teraWasserburg.y.calculate(age)) + 5);  
   }
 
-  undraw(): void {
-    this.plot.featureLayer.selectAll(".tw-line").remove();
-    this.plot.featureLayer.selectAll(".tw-envelope").remove();
-    this.plot.featureLayer.selectAll(".tw-tick").remove();
-    this.plot.featureLayer.selectAll(".tw-tick-label").remove();
+  undraw(plot: ScatterPlot): void {
+    const layerToDrawOn = findLayer(plot, Feature.CONCORDIA);
+
+    layerToDrawOn.selectAll(".tw-line").remove();
+    layerToDrawOn.selectAll(".tw-envelope").remove();
+    layerToDrawOn.selectAll(".tw-tick").remove();
+    layerToDrawOn.selectAll(".tw-tick-label").remove();
   }
 
   protected approximateSegment(
     path: (string | number)[],
     concordia: ConcordiaFns | EnvelopeFn,
     startAge: number,
-    endAge: number
+    endAge: number,
+    xScale: d3.scale.Linear<number, number>,
+    yScale: d3.scale.Linear<number, number>
   ): void {
     if (startAge === endAge) return;
     const ageRange = endAge - startAge;
     const p1 = concordia
       .vector(startAge)
       .plus(concordia.prime(startAge).times(3 / ageRange))
-      .scaleBy(this.plot.x.scale, this.plot.y.scale);
+      .scaleBy(xScale, yScale);
     const p2 = concordia
       .vector(endAge)
       .minus(concordia.prime(endAge).times(3 / ageRange))
-      .scaleBy(this.plot.x.scale, this.plot.y.scale);
+      .scaleBy(xScale, yScale);
     const p3 = concordia
       .vector(endAge)
-      .scaleBy(this.plot.x.scale, this.plot.y.scale);
+      .scaleBy(xScale, yScale);
 
     cubicBezier(path, p1, p2, p3);
   }
@@ -417,7 +434,6 @@ function newtonMethod(fn: ComponentFn, shiftValue?: number): number {
   // bounce around until the derivative at x1 is nonzero
   let x0,
     x1 = 1;
-  let derivative = fn.prime(x1);
   while (fn.prime(x1) === 0) {
     x1 += Math.random();
   }

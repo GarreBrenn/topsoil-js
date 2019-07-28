@@ -1,4 +1,6 @@
-import { ScatterPlot } from "../plots";
+import { ScatterPlot, findLayer, Feature } from "../plots";
+
+const POINT_CLASS = "point";
 
 export const Points = {
 
@@ -8,14 +10,16 @@ export const Points = {
       points_opacity: opacity
     } = plot.options;
 
-    const points = plot.dataLayer.selectAll(".point").data(plot.data);
+    const layerToDrawOn = findLayer(plot, Feature.POINTS);
+
+    const points = layerToDrawOn.selectAll("." + POINT_CLASS).data(plot.data);
 
     points.exit().remove();
 
     points
       .enter()
       .append("circle")
-      .attr("class", "point")
+      .attr("class", POINT_CLASS)
       .attr("r", 2.5);
 
     points
@@ -26,7 +30,9 @@ export const Points = {
   },
 
   undraw(plot: ScatterPlot): void {
-    plot.dataLayer.selectAll(".point").remove();
+    const layerToDrawOn = findLayer(plot, Feature.POINTS);
+    
+    layerToDrawOn.selectAll("." + POINT_CLASS).remove();
   }
 
 };

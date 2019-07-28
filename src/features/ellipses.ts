@@ -2,7 +2,9 @@ import * as d3 from "d3";
 import * as numeric from "numeric";
 
 import { cubicBezier } from "../utils";
-import { ScatterPlot, DataEntry } from "../plots";
+import { ScatterPlot, DataEntry, findLayer, Feature } from "../plots";
+
+const ELLIPSE_CLASS = "ellipse";
 
 export const Ellipses = {
 
@@ -14,14 +16,16 @@ export const Ellipses = {
       uncertainty
     } = plot.options;
 
-    const ellipses = plot.dataLayer.selectAll(".ellipse").data(calcEllipses(plot.data, uncertainty));
+    const layerToDrawOn = findLayer(plot, Feature.ELLIPSES);
+
+    const ellipses = layerToDrawOn.selectAll("." + ELLIPSE_CLASS).data(calcEllipses(plot.data, uncertainty));
 
     ellipses.exit().remove();
 
     ellipses
       .enter()
       .append("path")
-      .attr("class", "ellipse");
+      .attr("class", ELLIPSE_CLASS);
 
     ellipses
       .attr("d", d => {
@@ -51,7 +55,9 @@ export const Ellipses = {
   },
   
   undraw(plot: ScatterPlot): void {
-    plot.dataLayer.selectAll(".ellipse").remove();
+    const layerToDrawOn = findLayer(plot, Feature.ELLIPSES);
+
+    layerToDrawOn.selectAll("." + ELLIPSE_CLASS).remove();
   }
 
 };

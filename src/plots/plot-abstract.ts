@@ -1,6 +1,6 @@
 import * as d3 from "d3";
-import Plot from "./plot";
-import { DataEntry, Config } from "./const";
+import { Plot, LayerDefinition, LayerMap } from "./plot";
+import { DataEntry, Config, Feature } from "./const";
 
 export default abstract class AbstractPlot implements Plot {
 
@@ -18,18 +18,22 @@ export default abstract class AbstractPlot implements Plot {
   protected _data: DataEntry[];
   protected _options: Config;
 
+  readonly layerMap: LayerMap;
+  readonly defaultLayer: d3.Selection<SVGGElement>;
+  private drawnFeatures: Feature[];
+
   readonly svg: d3.Selection<SVGSVGElement>;
   readonly displayContainer: d3.Selection<SVGGElement>;
   readonly titleLabel: d3.Selection<SVGElement>;
   readonly background: d3.Selection<SVGGElement>;
   readonly border: d3.Selection<SVGGElement>;
 
-  readonly dataLayer: d3.Selection<SVGGElement>;
-  readonly featureLayer: d3.Selection<SVGGElement>;
+  // readonly dataLayer: d3.Selection<SVGGElement>;
+  // readonly featureLayer: d3.Selection<SVGGElement>;
 
   javaBridge: any | null;
 
-  constructor(readonly root: HTMLDivElement, data: DataEntry[], options: Config) {
+  constructor(readonly root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition) {
     this._data = data;
     this._options = options;
 
@@ -55,14 +59,17 @@ export default abstract class AbstractPlot implements Plot {
       .attr("font-size", "24px")
       .attr("y", -60);
 
-    this.canvas = this.displayContainer
+    const clipped = this.displayContainer
       .append("g")
       .attr("clip-path", "url(#plotClipBox)");
 
-    this.background = this.canvas
+    this.background = clipped
       .append("rect")
       .attr("id", "background")
       .attr("fill", "white");
+
+    this.canvas = clipped.append("g")
+      .attr("id", "canvas");
 
     this.displayContainer
       .append("defs")
@@ -78,11 +85,12 @@ export default abstract class AbstractPlot implements Plot {
       .attr("stroke", "black")
       .attr("stroke-width", "2px");
 
-    this.featureLayer = this.canvas.append("g");
-    this.dataLayer = this.canvas.append("g");
+    this.layerMap = layers ? constructLayerMap(this.canvas, layers) : {};
 
-    this.root.addEventListener("resize", () => this.update(), true);
-    window.addEventListener("resize", () => this.update(), true);
+    this.defaultLayer = this.canvas.insert("g", ":first-child")
+      .attr("class", "default-layer");
+
+    this.drawnFeatures = [];
   }
 
   get data() {
@@ -144,4 +152,22 @@ export default abstract class AbstractPlot implements Plot {
 
   abstract update(): void;
 
+}
+
+function constructLayerMap(parent: d3.Selection<SVGGElement>, layers: LayerDefinition): LayerMap  {
+  if (!parent) throw Error("A parent selection must be provided.");
+  if (!layers) return {};
+
+  const layerMap: { [key in Feature]?: d3.Selection<SVGGElement> } = {};
+  layers.forEach(part => {
+    const newLayer = parent.insert("g", ":first-child");
+    if (part instanceof Array) {
+      newLayer.attr("class", "layer-group")
+      Object.assign(layerMap, constructLayerMap(newLayer, part));
+    } else {
+      newLayer.attr("class", part + "-layer")
+      layerMap[part] = newLayer;
+    }
+  });
+  return layerMap;
 }

@@ -1,28 +1,26 @@
 import * as d3 from "d3";
-import { ScatterPlot, Feature } from "../../plots";
+import { ScatterPlot, FeatureInterface } from "../../plots";
 import { Vector2D } from "../../utils";
-declare abstract class ConcordiaPlotFeature implements Feature {
-    readonly plot: ScatterPlot;
+declare abstract class ConcordiaPlotFeature implements FeatureInterface {
     protected tickScale: d3.scale.Linear<number, number>;
-    constructor(plot: ScatterPlot);
-    abstract draw(): void;
-    abstract undraw(): void;
-    protected addConcordiaToPath(path: (string | number)[], concordia: ConcordiaFns | EnvelopeFn, startAge: number, endAge: number): void;
-    protected abstract approximateSegment(path: (string | number)[], concordia: ConcordiaFns | EnvelopeFn, startAge: number, endAge: number): void;
+    abstract draw(plot: ScatterPlot): void;
+    abstract undraw(plot: ScatterPlot): void;
+    protected addConcordiaToPath(path: (string | number)[], concordia: ConcordiaFns | EnvelopeFn, startAge: number, endAge: number, xScale: d3.scale.Linear<number, number>, yScale: d3.scale.Linear<number, number>): void;
+    protected abstract approximateSegment(path: (string | number)[], concordia: ConcordiaFns | EnvelopeFn, startAge: number, endAge: number, xScale: d3.scale.Linear<number, number>, yScale: d3.scale.Linear<number, number>): void;
 }
 export declare class WetherillConcordia extends ConcordiaPlotFeature {
-    readonly plot: ScatterPlot;
-    constructor(plot: ScatterPlot);
-    draw(): void;
-    undraw(): void;
-    protected approximateSegment(path: (string | number)[], concordia: ConcordiaFns | EnvelopeFn, startAge: number, endAge: number): void;
+    private static readonly LINE_CLASS;
+    private static readonly ENVELOPE_CLASS;
+    private static readonly TICK_CLASS;
+    private static readonly TICK_LABEL_CLASS;
+    draw(plot: ScatterPlot): void;
+    undraw(plot: ScatterPlot): void;
+    protected approximateSegment(path: (string | number)[], concordia: ConcordiaFns | EnvelopeFn, startAge: number, endAge: number, xScale: d3.scale.Linear<number, number>, yScale: d3.scale.Linear<number, number>): void;
 }
 export declare class TeraWasserburgConcordia extends ConcordiaPlotFeature {
-    readonly plot: ScatterPlot;
-    constructor(plot: ScatterPlot);
-    draw(): void;
-    undraw(): void;
-    protected approximateSegment(path: (string | number)[], concordia: ConcordiaFns | EnvelopeFn, startAge: number, endAge: number): void;
+    draw(plot: ScatterPlot): void;
+    undraw(plot: ScatterPlot): void;
+    protected approximateSegment(path: (string | number)[], concordia: ConcordiaFns | EnvelopeFn, startAge: number, endAge: number, xScale: d3.scale.Linear<number, number>, yScale: d3.scale.Linear<number, number>): void;
     private constrainAge;
 }
 declare abstract class ConcordiaFns {

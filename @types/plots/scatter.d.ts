@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import AbstractPlot from "./plot-abstract";
 import { DataEntry, Config } from "./const";
+import { LayerDefinition } from "./plot";
 export default class ScatterPlot extends AbstractPlot {
     readonly root: HTMLDivElement;
     margin: {
@@ -25,7 +26,7 @@ export default class ScatterPlot extends AbstractPlot {
     private xAxisG;
     private yLabel;
     private yAxisG;
-    constructor(root: HTMLDivElement, data: DataEntry[], options: Config);
+    constructor(root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition);
     protected resize(): void;
     update(): void;
     getDataExtents(): number[];
