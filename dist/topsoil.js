@@ -15306,15 +15306,16 @@ class AbstractPlot {
             .attr("font-family", "sans-serif")
             .attr("font-size", "24px")
             .attr("y", -60);
-        const clipped = this.displayContainer
+        this.canvas = this.displayContainer
             .append("g")
             .attr("clip-path", "url(#plotClipBox)");
-        this.background = clipped
-            .append("rect")
+        this.layerMap = layers ? constructLayerMap(this.canvas, layers) : {};
+        this.defaultLayer = this.canvas.insert("g", ":first-child")
+            .attr("class", "default-layer");
+        this.background = this.canvas
+            .insert("rect", ":first-child")
             .attr("id", "background")
             .attr("fill", "white");
-        this.canvas = clipped.append("g")
-            .attr("id", "canvas");
         this.displayContainer
             .append("defs")
             .append("clipPath")
@@ -15327,9 +15328,6 @@ class AbstractPlot {
             .attr("fill", "none")
             .attr("stroke", "black")
             .attr("stroke-width", "2px");
-        this.layerMap = layers ? constructLayerMap(this.canvas, layers) : {};
-        this.defaultLayer = this.canvas.insert("g", ":first-child")
-            .attr("class", "default-layer");
         this.drawnFeatures = [];
     }
     get data() {
