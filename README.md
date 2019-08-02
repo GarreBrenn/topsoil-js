@@ -15,6 +15,10 @@ A TypeScript library for creating d3-driven geochronological data visualizations
 
 ## <a name="installation"></a> Installation
 
+Browser:<br/>
+Save a copy of `dist/topsoil.js` and reference it with a `script` tag. The library will be added as a member of `window` called `topsoil`.
+
+Node.js:<br/>
 `npm install CIRDLES/topsoil-js`
 
 ## <a name="basic-example"></a> Basic Example
