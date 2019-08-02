@@ -78,26 +78,26 @@ String value | Enum value
 "concordia"  | Feature.CONCORDIA
 "evolution"  | Feature.EVOLUTION
 
-#### `.setDataFromJSON(data: string): void`
+#### `.setDataFromJSON(data: string)`: `void`
 Sets the plot's data from the provided JSON string.
 
-#### `.setOptionsFromJSON(options: string): void`
+#### `.setOptionsFromJSON(options: string)`: `void`
 Sets the plot's options from the provided JSON string.
 
-#### `.getDataExtents(): number[]`
+#### `.getDataExtents()`: `number[]`
 Returns an array containing the minimum and maximum data values for each axis at the following indices:
 <br/>[0] Minimum X value
 <br/>[1] Maximum X value
 <br/>[2] Minimum Y value
 <br/>[3] Maximum Y value
 
-#### `.changeAxisExtents(xMin: number, xMax: number, yMin: number, yMax: number, doInterpolate?: boolean = false): void`
+#### `.changeAxisExtents(xMin: number, xMax: number, yMin: number, yMax: number, doInterpolate?: boolean = false)`: `void`
 Sets the plot's axes to the provided extents. If `doInterpolate` is true, then the transition will be animated.
 
-#### `.resetView(): void`
+#### `.resetView()`: `void`
 Zooms the plot to fit the data extents.
 
-#### `.snapToConcordia(): void`
+#### `.snapToConcordia()`: `void`
 Zooms the plot so that the Wetherill concordia passes through the lower-left and upper-right corners.
 
 ### <a name="variables"></a> Data Variables
