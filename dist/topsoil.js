@@ -15580,7 +15580,7 @@ class ScatterPlot extends plot_abstract_1.default {
         const extents = [1000000, -1000000, 1000000, -1000000];
         let sigmaX, sigmaY;
         this.data.forEach(d => {
-            if (d.selected) {
+            if (d.visible) {
                 sigmaX = (d.sigma_x || 0) * (this.options["uncertainty" /* UNCERTAINTY */] || 1);
                 sigmaY = (d.sigma_y || 0) * (this.options["uncertainty" /* UNCERTAINTY */] || 1);
                 extents[0] = Math.min(extents[0], d.x - sigmaX);
