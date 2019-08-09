@@ -15304,8 +15304,13 @@ class AbstractPlot {
             .append("text")
             .attr("class", "title-text")
             .attr("font-family", "sans-serif")
-            .attr("font-size", "24px")
-            .attr("y", -60);
+            .attr("font-size", "24px");
+        // const titleElement = this.titleLabel.node() as SVGElement,
+        //   titleX = (this._canvasWidth / 2) - (titleElement.getBoundingClientRect().width / 2),
+        //   titleY = -(this._margin.top / 2) + (titleElement.getBoundingClientRect().height / 3);
+        // this.titleLabel
+        //   .attr("x", titleX)
+        //   .attr("y", titleY);
         this.canvas = this.displayContainer
             .append("g")
             .attr("clip-path", "url(#plotClipBox)");
@@ -15380,7 +15385,8 @@ class AbstractPlot {
             .attr("height", this._canvasHeight);
         this.titleLabel
             .text(this._options.title)
-            .attr("x", this._canvasWidth / 2 - this.titleLabel.node().getBoundingClientRect().width / 2);
+            .attr("x", (this._canvasWidth / 2) - (this.titleLabel.node().getBoundingClientRect().width / 2))
+            .attr("y", -(this._margin.top / 2) + (this.titleLabel.node().getBoundingClientRect().height / 3));
     }
 }
 exports.default = AbstractPlot;

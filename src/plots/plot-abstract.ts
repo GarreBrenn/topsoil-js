@@ -53,8 +53,13 @@ export default abstract class AbstractPlot implements Plot {
       .append("text")
       .attr("class", "title-text")
       .attr("font-family", "sans-serif")
-      .attr("font-size", "24px")
-      .attr("y", -60);
+      .attr("font-size", "24px");
+    // const titleElement = this.titleLabel.node() as SVGElement,
+    //   titleX = (this._canvasWidth / 2) - (titleElement.getBoundingClientRect().width / 2),
+    //   titleY = -(this._margin.top / 2) + (titleElement.getBoundingClientRect().height / 3);
+    // this.titleLabel
+    //   .attr("x", titleX)
+    //   .attr("y", titleY);
 
     this.canvas = this.displayContainer
       .append("g")
@@ -150,17 +155,15 @@ export default abstract class AbstractPlot implements Plot {
 
     this.titleLabel
       .text(this._options.title)
-      .attr(
-        "x",
-        this._canvasWidth / 2 - (this.titleLabel.node() as SVGElement).getBoundingClientRect().width / 2
-      );
+      .attr("x", (this._canvasWidth / 2) - ((this.titleLabel.node() as SVGElement).getBoundingClientRect().width / 2))
+      .attr("y", -(this._margin.top / 2) + ((this.titleLabel.node() as SVGElement).getBoundingClientRect().height / 3));
   }
 
   abstract update(): void;
 
 }
 
-function constructLayerMap(parent: d3.Selection<SVGGElement>, layers: LayerDefinition): LayerMap  {
+function constructLayerMap(parent: d3.Selection<SVGGElement>, layers: LayerDefinition): LayerMap {
   if (!parent) throw Error("A parent selection must be provided.");
   if (!layers) return {};
 
