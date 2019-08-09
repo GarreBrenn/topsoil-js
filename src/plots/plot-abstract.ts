@@ -6,17 +6,17 @@ export default abstract class AbstractPlot implements Plot {
 
   readonly canvas: d3.Selection<SVGGElement>;
 
-  margin = {
-    top: 110,
-    right: 75,
-    bottom: 75,
-    left: 75
-  }
   private _canvasWidth: number;
   private _canvasHeight: number;
 
   protected _data: DataEntry[];
   protected _options: Config;
+  protected _margin = {
+    top: 110,
+    right: 75,
+    bottom: 75,
+    left: 75
+  }
 
   readonly layerMap: LayerMap;
   readonly defaultLayer: d3.Selection<SVGGElement>;
@@ -28,9 +28,6 @@ export default abstract class AbstractPlot implements Plot {
   readonly background: d3.Selection<SVGGElement>;
   readonly border: d3.Selection<SVGGElement>;
 
-  // readonly dataLayer: d3.Selection<SVGGElement>;
-  // readonly featureLayer: d3.Selection<SVGGElement>;
-
   javaBridge: any | null;
 
   constructor(readonly root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition) {
@@ -39,8 +36,8 @@ export default abstract class AbstractPlot implements Plot {
 
     // Create plot containers
     const { width, height } = this.root.getBoundingClientRect();
-    this._canvasWidth = Math.max(0, width - (this.margin.left + this.margin.right));
-    this._canvasHeight = Math.max(0, height - (this.margin.top + this.margin.bottom));
+    this._canvasWidth = Math.max(0, width - (this._margin.left + this._margin.right));
+    this._canvasHeight = Math.max(0, height - (this._margin.top + this._margin.bottom));
 
     this.svg = d3
       .select(root)
@@ -50,7 +47,7 @@ export default abstract class AbstractPlot implements Plot {
     this.displayContainer = this.svg
       .append("g")
       .attr("id", "displayContainer")
-      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+      .attr("transform", "translate(" + this._margin.left + "," + this._margin.top + ")");
 
     this.titleLabel = this.displayContainer
       .append("text")
@@ -112,6 +109,15 @@ export default abstract class AbstractPlot implements Plot {
     this.update();
   }
 
+  get margin() {
+    return this._margin;
+  }
+
+  set margin(margin: { top: number, right: number, bottom: number, left: number }) {
+    this._margin = margin;
+    this.update();
+  }
+
   setOptionsFromJSON(options: string) {
     this.options = JSON.parse(options);
   }
@@ -126,8 +132,11 @@ export default abstract class AbstractPlot implements Plot {
 
   protected resize(): void {
     const { width, height } = this.root.getBoundingClientRect();
-    this._canvasWidth = Math.max(0, width - (this.margin.left + this.margin.right));
-    this._canvasHeight = Math.max(0, height - (this.margin.top + this.margin.bottom));
+    this._canvasWidth = Math.max(0, width - (this._margin.left + this._margin.right));
+    this._canvasHeight = Math.max(0, height - (this._margin.top + this._margin.bottom));
+
+    this.displayContainer
+      .attr("transform", "translate(" + this._margin.left + "," + this._margin.top + ")");
 
     this.svg
       .attr("width", width)

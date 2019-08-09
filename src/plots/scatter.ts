@@ -12,13 +12,6 @@ const AXIS_CLASS = "axis";
 
 export default class ScatterPlot extends AbstractPlot {
 
-  margin = {
-    top: 110,
-    right: 75,
-    bottom: 75,
-    left: 75
-  };
-
   private features: { [key: string]: any } = {};
 
   canvas: d3.Selection<SVGGElement>;
@@ -73,11 +66,11 @@ export default class ScatterPlot extends AbstractPlot {
     const xScale = d3.scale
       .linear()
       .domain([extents[0] - xPadding, extents[1] + xPadding])
-      .range([0, width - (this.margin.left + this.margin.right)]);
+      .range([0, width - (this._margin.left + this._margin.right)]);
     const yScale = d3.scale
       .linear()
       .domain([extents[2] - yPadding, extents[3] + yPadding])
-      .range([height - (this.margin.top + this.margin.bottom), 0]);
+      .range([height - (this._margin.top + this._margin.bottom), 0]);
 
     const xAxis = d3.svg.axis().orient("bottom");
     const yAxis = d3.svg.axis().orient("left");

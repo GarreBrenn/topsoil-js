@@ -15280,7 +15280,7 @@ const d3 = __webpack_require__(/*! d3 */ "./node_modules/d3/d3.js");
 class AbstractPlot {
     constructor(root, data, options, layers) {
         this.root = root;
-        this.margin = {
+        this._margin = {
             top: 110,
             right: 75,
             bottom: 75,
@@ -15290,8 +15290,8 @@ class AbstractPlot {
         this._options = options;
         // Create plot containers
         const { width, height } = this.root.getBoundingClientRect();
-        this._canvasWidth = Math.max(0, width - (this.margin.left + this.margin.right));
-        this._canvasHeight = Math.max(0, height - (this.margin.top + this.margin.bottom));
+        this._canvasWidth = Math.max(0, width - (this._margin.left + this._margin.right));
+        this._canvasHeight = Math.max(0, height - (this._margin.top + this._margin.bottom));
         this.svg = d3
             .select(root)
             .append("svg")
@@ -15299,7 +15299,7 @@ class AbstractPlot {
         this.displayContainer = this.svg
             .append("g")
             .attr("id", "displayContainer")
-            .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+            .attr("transform", "translate(" + this._margin.left + "," + this._margin.top + ")");
         this.titleLabel = this.displayContainer
             .append("text")
             .attr("class", "title-text")
@@ -15347,6 +15347,13 @@ class AbstractPlot {
         this._options = options;
         this.update();
     }
+    get margin() {
+        return this._margin;
+    }
+    set margin(margin) {
+        this._margin = margin;
+        this.update();
+    }
     setOptionsFromJSON(options) {
         this.options = JSON.parse(options);
     }
@@ -15358,8 +15365,10 @@ class AbstractPlot {
     }
     resize() {
         const { width, height } = this.root.getBoundingClientRect();
-        this._canvasWidth = Math.max(0, width - (this.margin.left + this.margin.right));
-        this._canvasHeight = Math.max(0, height - (this.margin.top + this.margin.bottom));
+        this._canvasWidth = Math.max(0, width - (this._margin.left + this._margin.right));
+        this._canvasHeight = Math.max(0, height - (this._margin.top + this._margin.bottom));
+        this.displayContainer
+            .attr("transform", "translate(" + this._margin.left + "," + this._margin.top + ")");
         this.svg
             .attr("width", width)
             .attr("height", height);
@@ -15438,12 +15447,6 @@ class ScatterPlot extends plot_abstract_1.default {
     constructor(root, data, options, layers) {
         super(root, data, options, layers);
         this.root = root;
-        this.margin = {
-            top: 110,
-            right: 75,
-            bottom: 75,
-            left: 75
-        };
         this.features = {};
         this.xAxisG = this.displayContainer
             .append("g") // x axis container
@@ -15469,11 +15472,11 @@ class ScatterPlot extends plot_abstract_1.default {
         const xScale = d3.scale
             .linear()
             .domain([extents[0] - xPadding, extents[1] + xPadding])
-            .range([0, width - (this.margin.left + this.margin.right)]);
+            .range([0, width - (this._margin.left + this._margin.right)]);
         const yScale = d3.scale
             .linear()
             .domain([extents[2] - yPadding, extents[3] + yPadding])
-            .range([height - (this.margin.top + this.margin.bottom), 0]);
+            .range([height - (this._margin.top + this._margin.bottom), 0]);
         const xAxis = d3.svg.axis().orient("bottom");
         const yAxis = d3.svg.axis().orient("left");
         this.x = {

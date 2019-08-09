@@ -4,16 +4,16 @@ import { DataEntry, Config } from "./const";
 export default abstract class AbstractPlot implements Plot {
     readonly root: HTMLDivElement;
     readonly canvas: d3.Selection<SVGGElement>;
-    margin: {
+    private _canvasWidth;
+    private _canvasHeight;
+    protected _data: DataEntry[];
+    protected _options: Config;
+    protected _margin: {
         top: number;
         right: number;
         bottom: number;
         left: number;
     };
-    private _canvasWidth;
-    private _canvasHeight;
-    protected _data: DataEntry[];
-    protected _options: Config;
     readonly layerMap: LayerMap;
     readonly defaultLayer: d3.Selection<SVGGElement>;
     private drawnFeatures;
@@ -27,6 +27,12 @@ export default abstract class AbstractPlot implements Plot {
     data: DataEntry[];
     setDataFromJSON(data: string): void;
     options: Config;
+    margin: {
+        top: number;
+        right: number;
+        bottom: number;
+        left: number;
+    };
     setOptionsFromJSON(options: string): void;
     readonly canvasWidth: number;
     readonly canvasHeight: number;

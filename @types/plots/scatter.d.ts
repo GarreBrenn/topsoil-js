@@ -4,12 +4,6 @@ import { DataEntry, Config } from "./const";
 import { LayerDefinition } from "./plot";
 export default class ScatterPlot extends AbstractPlot {
     readonly root: HTMLDivElement;
-    margin: {
-        top: number;
-        right: number;
-        bottom: number;
-        left: number;
-    };
     private features;
     canvas: d3.Selection<SVGGElement>;
     x: {
