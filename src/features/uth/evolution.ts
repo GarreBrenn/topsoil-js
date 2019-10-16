@@ -3,7 +3,9 @@ import { add, sub, mul, div, dot } from "numeric";
 import { pluck, moveTo, cubicBezier } from "../../utils";
 
 const ISOCHRON_CLASS = "matrix-isochron",
-      CONTOUR_CLASS = "matrix-contour";
+      ISOCHRON_LABEL_CLASS = "matrix-isochron-label",
+      CONTOUR_CLASS = "matrix-contour",
+      CONTOUR_LABEL_CLASS = "matrix-contour-label";
 
 const INF = Number.MAX_VALUE;
 const isochronAges = [
@@ -187,13 +189,57 @@ export class EvolutionMatrix implements FeatureInterface {
       .exit()
       .remove();
     
+    const labels = plot.canvas.selectAll("." + ISOCHRON_LABEL_CLASS).data(isochrons);
+
+    labels.enter()
+      .append("text")
+      .attr("class", ISOCHRON_LABEL_CLASS)
+      .text(d => (d.age === INF) ? "INF" : d.age / 1000)
+      .attr("text-anchor", "start")
+      .attr("fill", "red")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "14px");
+
+    labels
+      .attr("transform", (d, i) => {
+        let x, y, xOffset, yOffset;
+
+        const deltaX = xScale(xEndpoints[1][i]) - xScale(xEndpoints[0][i]),
+              deltaY = -(yScale(yEndpoints[1][i]) - yScale(yEndpoints[0][i])),
+              slope = deltaY / deltaX,
+              angle = -((Math.atan(slope) * (180 / Math.PI)));  // Must convert from radians to degrees
+
+        if (R[i] >= contourYLimits[1]) {
+          // isochron intersects plot boundary at top
+          yOffset = 30;
+          xOffset = ((yOffset * deltaX) / deltaY) + 14;   // +14 for the font size
+          x = plot.x.scale(T[i] * (lambda_230 / lambda_238)) - xOffset;
+          y = yOffset;
+        } else if (R[i] < contourYLimits[1]) { 
+          // isochron intersects plot boundary at right
+          x = plot.canvasWidth - 30;
+          y = plot.y.scale(R[i] * (lambda_234 / lambda_238));
+        }
+
+        return `translate (${x},${y}) rotate(${angle})`;
+      })
+      .attr("fill-opacity", (d, i) => {
+        if ((T[i] < d.xMin) || (R[i] < d.yMin)) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+
+    labels.exit().remove();
   }
 
   undraw(plot: ScatterPlot): void {
     const layerToDrawOn = findLayer(plot, Feature.EVOLUTION);
 
-    layerToDrawOn.selectAll("." + ISOCHRON_CLASS).remove()
+    layerToDrawOn.selectAll("." + ISOCHRON_CLASS).remove();
     layerToDrawOn.selectAll("." + CONTOUR_CLASS).remove();
+    layerToDrawOn.selectAll("." + ISOCHRON_LABEL_CLASS).remove();
   }
 
 }

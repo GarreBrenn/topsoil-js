@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import { Plot, LayerDefinition, LayerMap } from "./plot";
 import { DataEntry, Config } from "./const";
+import { JavaBridge } from '../utils/bridge';
 export default abstract class AbstractPlot implements Plot {
     readonly root: HTMLDivElement;
     readonly canvas: d3.Selection<SVGGElement>;
@@ -16,13 +17,12 @@ export default abstract class AbstractPlot implements Plot {
     };
     readonly layerMap: LayerMap;
     readonly defaultLayer: d3.Selection<SVGGElement>;
-    private drawnFeatures;
     readonly svg: d3.Selection<SVGSVGElement>;
     readonly displayContainer: d3.Selection<SVGGElement>;
     readonly titleLabel: d3.Selection<SVGElement>;
     readonly background: d3.Selection<SVGGElement>;
     readonly border: d3.Selection<SVGGElement>;
-    javaBridge: any | null;
+    javaBridge: JavaBridge;
     constructor(root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition);
     data: DataEntry[];
     setDataFromJSON(data: string): void;

@@ -5,7 +5,7 @@
   "main": "./dist/topsoil.js",
   "scripts": {
     "build": "webpack",
-    "start:dev": "webpack-dev-server"
+    "start": "webpack-dev-server --open"
   },
   "keywords": [],
   "author": "",

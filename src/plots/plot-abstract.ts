@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import { Plot, LayerDefinition, LayerMap } from "./plot";
 import { DataEntry, Config, Feature } from "./const";
+import { JavaBridge } from '../utils/bridge';
 
 export default abstract class AbstractPlot implements Plot {
 
@@ -20,7 +21,6 @@ export default abstract class AbstractPlot implements Plot {
 
   readonly layerMap: LayerMap;
   readonly defaultLayer: d3.Selection<SVGGElement>;
-  private drawnFeatures: Feature[];
 
   readonly svg: d3.Selection<SVGSVGElement>;
   readonly displayContainer: d3.Selection<SVGGElement>;
@@ -28,7 +28,7 @@ export default abstract class AbstractPlot implements Plot {
   readonly background: d3.Selection<SVGGElement>;
   readonly border: d3.Selection<SVGGElement>;
 
-  javaBridge: any | null;
+  javaBridge: JavaBridge;
 
   constructor(readonly root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition) {
     this._data = data;
@@ -42,7 +42,7 @@ export default abstract class AbstractPlot implements Plot {
     this.svg = d3
       .select(root)
       .append("svg")
-      .attr("id", "plot1");
+      .attr("id", "plot_svg");
 
     this.displayContainer = this.svg
       .append("g")
@@ -54,12 +54,6 @@ export default abstract class AbstractPlot implements Plot {
       .attr("class", "title-text")
       .attr("font-family", "sans-serif")
       .attr("font-size", "24px");
-    // const titleElement = this.titleLabel.node() as SVGElement,
-    //   titleX = (this._canvasWidth / 2) - (titleElement.getBoundingClientRect().width / 2),
-    //   titleY = -(this._margin.top / 2) + (titleElement.getBoundingClientRect().height / 3);
-    // this.titleLabel
-    //   .attr("x", titleX)
-    //   .attr("y", titleY);
 
     this.canvas = this.displayContainer
       .append("g")
@@ -89,7 +83,6 @@ export default abstract class AbstractPlot implements Plot {
       .attr("stroke", "black")
       .attr("stroke-width", "2px");
 
-    this.drawnFeatures = [];
   }
 
   get data() {

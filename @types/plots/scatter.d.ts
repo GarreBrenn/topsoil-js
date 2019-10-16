@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import AbstractPlot from "./plot-abstract";
 import { DataEntry, Config } from "./const";
 import { LayerDefinition } from "./plot";
+import { RegressionBridge } from '../utils/bridge';
 export default class ScatterPlot extends AbstractPlot {
     readonly root: HTMLDivElement;
     private features;
@@ -20,6 +21,7 @@ export default class ScatterPlot extends AbstractPlot {
     private xAxisG;
     private yLabel;
     private yAxisG;
+    regressionBridge: RegressionBridge;
     constructor(root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition);
     protected resize(): void;
     update(): void;

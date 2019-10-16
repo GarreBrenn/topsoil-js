@@ -14314,6 +14314,144 @@ exports.ErrorBars = {
 
 /***/ }),
 
+/***/ "./src/features/java/mclean-regression.ts":
+/*!************************************************!*\
+  !*** ./src/features/java/mclean-regression.ts ***!
+  \************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const plots_1 = __webpack_require__(/*! ../../plots */ "./src/plots/index.ts");
+const numeric_1 = __webpack_require__(/*! numeric */ "./node_modules/numeric/numeric-1.2.6.js");
+const d3 = __webpack_require__(/*! d3 */ "./node_modules/d3/d3.js");
+class McLeanRegression {
+    draw(plot) {
+        // Calculate line
+        const { data, regressionBridge: regression, x: { scale: xScale }, y: { scale: yScale } } = plot;
+        const xList = [], yList = [], sigmaXList = [], sigmaYList = [], rhoList = [];
+        data.forEach(d => {
+            if (d["selected" /* SELECTED */]) {
+                xList.push(d.x);
+                yList.push(d.y);
+                sigmaXList.push(d.sigma_x);
+                sigmaYList.push(d.sigma_y);
+                rhoList.push(d.rho);
+            }
+        });
+        regression.fitLineToDataFor2D(xList.toString(), yList.toString(), sigmaXList.toString(), sigmaYList.toString(), rhoList.toString());
+        this.slope = regression.getSlope();
+        this.yIntercept = regression.getIntercept();
+        // Draw line
+        const layerToDrawOn = plots_1.findLayer(plot, plots_1.Feature.MCLEAN_REGRESSION);
+        let line = layerToDrawOn.select("." + McLeanRegression.LINE_CLASS);
+        if (line.empty()) {
+            line = layerToDrawOn.append("line")
+                .attr("class", McLeanRegression.LINE_CLASS)
+                .attr("stroke", "black")
+                .attr("stroke-width", 1);
+        }
+        // Update line
+        const x1 = 0, y1 = this.yIntercept, x2 = xScale.domain()[1], y2 = (this.slope * x2) + this.yIntercept;
+        line.attr("x1", xScale(x1))
+            .attr("y1", yScale(y1))
+            .attr("x2", xScale(x2))
+            .attr("y2", yScale(y2));
+        // Get current envelope selections
+        let upperEnvelope = layerToDrawOn.select("." + McLeanRegression.UPPER_ENVELOPE_CLASS);
+        let lowerEnvelope = layerToDrawOn.select("." + McLeanRegression.LOWER_ENVELOPE_CLASS);
+        // Undraw envelope if not specified
+        if (!plot.options["regression_mclean_envelope" /* MCLEAN_REGRESSION_ENVELOPE */]) {
+            upperEnvelope.remove();
+            lowerEnvelope.remove();
+        }
+        else {
+            // Draw new envelopes if none exist
+            if (upperEnvelope.empty()) {
+                upperEnvelope = layerToDrawOn.append("path")
+                    .attr("class", McLeanRegression.UPPER_ENVELOPE_CLASS)
+                    .attr("stroke", "blue")
+                    .attr("stroke-width", 2)
+                    .attr("fill", "none")
+                    .style("stroke-dasharray", ("5, 5"));
+            }
+            if (lowerEnvelope.empty()) {
+                lowerEnvelope = layerToDrawOn.append("path")
+                    .attr("class", McLeanRegression.LOWER_ENVELOPE_CLASS)
+                    .attr("stroke", "blue")
+                    .attr("stroke-width", 2)
+                    .attr("fill", "none")
+                    .style("stroke-dasharray", ("5, 5"));
+            }
+            const xMin = xScale.domain()[0], xMax = xScale.domain()[1], aXVar = regression.getAX(), aYVar = regression.getIntercept(), vXVar = regression.getVectorX(), vYVar = regression.getSlope(), subCov = this.sav || this.calcSav(regression.getSav()), tIncrement = (xMax - xMin) / 50;
+            this.envelopeLowerBound = [];
+            this.envelopeUpperBound = [];
+            if (tIncrement > 0) {
+                for (let tStep = (0.9 * xMin); tStep <= (1.1 * xMax); tStep += tIncrement) {
+                    const vperp = [[-vYVar, vXVar]], Jxyab = [[0, 0], [1, tStep]], dot1 = numeric_1.dot(vperp, Jxyab), dot2 = numeric_1.dot(dot1, subCov), dot3 = numeric_1.dot(dot2, numeric_1.transpose(Jxyab)), dot4 = numeric_1.dot(dot3, numeric_1.transpose(vperp)), thing5 = dot4[0][0], dot6 = numeric_1.dot(vperp, numeric_1.transpose(vperp)), s2perp = thing5 / dot6[0][0], xv = 2 * Math.cos(Math.atan(-vXVar / vYVar)) * Math.sqrt(s2perp), yv = 2 * Math.sin(Math.atan(-vXVar / vYVar)) * Math.sqrt(s2perp), xplus = xScale(aXVar + vXVar * tStep + xv), yplus = yScale(aYVar + vYVar * tStep + yv), xminus = xScale(aXVar + vXVar * tStep - xv), yminus = yScale(aYVar + vYVar * tStep - yv);
+                    this.envelopeLowerBound.push([xminus, yminus]);
+                    this.envelopeUpperBound.push([xplus, yplus]);
+                }
+            }
+            lowerEnvelope.attr("d", lineGenerator(this.envelopeLowerBound));
+            upperEnvelope.attr("d", lineGenerator(this.envelopeUpperBound));
+        }
+        // Draw info box
+        let info = plot.displayContainer.select("." + McLeanRegression.INFO_CLASS);
+        if (info.empty()) {
+            info = plot.displayContainer.append("text")
+                .attr("class", McLeanRegression.INFO_CLASS)
+                .attr("font-family", "sans-serif")
+                .attr("font-size", "14px")
+                .attr("x", 0)
+                .attr("y", -20)
+                .attr("fill", "black");
+        }
+        info.text("Regression slope: " + this.slope);
+        let infoWidth = info.node().getBBox().width;
+        info
+            .attr("x", (plot.canvasWidth - 30) - infoWidth);
+    }
+    undraw(plot) {
+        const layerToDrawOn = plots_1.findLayer(plot, plots_1.Feature.MCLEAN_REGRESSION);
+        layerToDrawOn.selectAll("." + McLeanRegression.LINE_CLASS).remove();
+        layerToDrawOn.selectAll("." + McLeanRegression.UPPER_ENVELOPE_CLASS).remove();
+        layerToDrawOn.selectAll("." + McLeanRegression.LOWER_ENVELOPE_CLASS).remove();
+        plot.displayContainer.selectAll("." + McLeanRegression.INFO_CLASS).remove();
+    }
+    calcSav(savString) {
+        let matrix = [];
+        const savList = savString.split(";");
+        savList.forEach((arr, i) => {
+            if (arr.length === 0)
+                return;
+            matrix.push([]);
+            const values = arr.split(",");
+            values.forEach((value, j) => {
+                if (value === "")
+                    return;
+                matrix[i].push(+value);
+            });
+        });
+        this.sav = matrix;
+        return matrix;
+    }
+}
+McLeanRegression.LINE_CLASS = "mclean-line";
+McLeanRegression.UPPER_ENVELOPE_CLASS = "mclean-upper-envelope";
+McLeanRegression.LOWER_ENVELOPE_CLASS = "mclean-lower-envelope";
+McLeanRegression.INFO_CLASS = "mclean-info";
+exports.McLeanRegression = McLeanRegression;
+const lineGenerator = d3.svg.line()
+    .interpolate("cardinal")
+    .x(d => d[0])
+    .y(d => d[1]);
+
+
+/***/ }),
+
 /***/ "./src/features/points.ts":
 /*!********************************!*\
   !*** ./src/features/points.ts ***!
@@ -14382,16 +14520,8 @@ class ConcordiaPlotFeature {
 }
 class WetherillConcordia extends ConcordiaPlotFeature {
     draw(plot) {
-        const { x: { scale: xScale }, y: { scale: yScale }, options: { lambda_235, lambda_238, concordia_line_fill: lineFill, concordia_line_opacity: lineOpacity, concordia_envelope_fill: envelopeFill, concordia_envelope_opacity: envelopeOpacity } } = plot;
+        const { x: { scale: xScale }, y: { scale: yScale }, options: { lambda_235, lambda_238, concordia_envelope, concordia_line_fill: lineFill, concordia_line_opacity: lineOpacity, concordia_envelope_fill: envelopeFill, concordia_envelope_opacity: envelopeOpacity } } = plot;
         const layerToDrawOn = plots_1.findLayer(plot, plots_1.Feature.CONCORDIA);
-        let envelope = layerToDrawOn.select("." + WetherillConcordia.ENVELOPE_CLASS);
-        if (envelope.empty()) {
-            envelope = layerToDrawOn
-                .append("path")
-                .attr("class", WetherillConcordia.ENVELOPE_CLASS)
-                .attr("stroke", "none")
-                .attr("shape-rendering", "geometricPrecision");
-        }
         let line = layerToDrawOn.select("." + WetherillConcordia.LINE_CLASS);
         if (line.empty()) {
             line = layerToDrawOn
@@ -14404,10 +14534,6 @@ class WetherillConcordia extends ConcordiaPlotFeature {
         const xDomain = xScale.domain(), xMin = Math.max(0.0, xDomain[0]), xMax = Math.min(93.0, xDomain[1]), yDomain = yScale.domain(), yMin = Math.max(0.0, yDomain[0]), yMax = Math.min(2.05, yDomain[1]);
         const minAge = Math.max(newtonMethod(wetherill.x, xMin), newtonMethod(wetherill.y, yMin));
         const maxAge = Math.min(newtonMethod(wetherill.x, xMax), newtonMethod(wetherill.y, yMax));
-        const upperMinAge = Math.max(newtonMethod(wetherill.upperEnvelope.x, xMin), newtonMethod(wetherill.upperEnvelope.y, yMin));
-        const upperMaxAge = Math.max(newtonMethod(wetherill.upperEnvelope.x, xMax), newtonMethod(wetherill.upperEnvelope.y, yMax));
-        const lowerMinAge = Math.min(newtonMethod(wetherill.lowerEnvelope.x, xMin), newtonMethod(wetherill.lowerEnvelope.y, yMin));
-        const lowerMaxAge = Math.min(newtonMethod(wetherill.lowerEnvelope.x, xMax), newtonMethod(wetherill.lowerEnvelope.y, yMax));
         const startPoint = wetherill.vector(minAge).scaleBy(xScale, yScale);
         const endPoint = wetherill.vector(maxAge).scaleBy(xScale, yScale);
         // build the concordia line
@@ -14421,23 +14547,41 @@ class WetherillConcordia extends ConcordiaPlotFeature {
             .attr("stroke", lineFill)
             .attr("opacity", lineOpacity || 1)
             .attr("stroke-width", 2);
-        // build the uncertainty envelope
-        envelope
-            .attr("d", () => {
-            const path = [];
-            utils_1.moveTo(path, wetherill.upperEnvelope
-                .vector(upperMinAge)
-                .scaleBy(xScale, yScale));
-            this.addConcordiaToPath(path, wetherill.upperEnvelope, upperMinAge, upperMaxAge, xScale, yScale);
-            utils_1.lineTo(path, wetherill.lowerEnvelope
-                .vector(lowerMaxAge)
-                .scaleBy(xScale, yScale));
-            this.addConcordiaToPath(path, wetherill.lowerEnvelope, lowerMaxAge, lowerMinAge, xScale, yScale);
-            utils_1.close(path);
-            return path.join("");
-        })
-            .attr("fill", envelopeFill)
-            .attr("opacity", envelopeOpacity || 1);
+        let envelope = layerToDrawOn.select("." + WetherillConcordia.ENVELOPE_CLASS);
+        if (!concordia_envelope) {
+            envelope.remove();
+        }
+        else {
+            if (envelope.empty()) {
+                envelope = layerToDrawOn
+                    .insert("path", ":first-child")
+                    .attr("class", WetherillConcordia.ENVELOPE_CLASS)
+                    .attr("stroke", "none")
+                    .attr("shape-rendering", "geometricPrecision");
+            }
+            const upperMinAge = Math.max(newtonMethod(wetherill.upperEnvelope.x, xMin), newtonMethod(wetherill.upperEnvelope.y, yMin));
+            const upperMaxAge = Math.max(newtonMethod(wetherill.upperEnvelope.x, xMax), newtonMethod(wetherill.upperEnvelope.y, yMax));
+            const lowerMinAge = Math.min(newtonMethod(wetherill.lowerEnvelope.x, xMin), newtonMethod(wetherill.lowerEnvelope.y, yMin));
+            const lowerMaxAge = Math.min(newtonMethod(wetherill.lowerEnvelope.x, xMax), newtonMethod(wetherill.lowerEnvelope.y, yMax));
+            // build the uncertainty envelope
+            envelope
+                .attr("d", () => {
+                const path = [];
+                utils_1.moveTo(path, wetherill.upperEnvelope
+                    .vector(upperMinAge)
+                    .scaleBy(xScale, yScale));
+                this.addConcordiaToPath(path, wetherill.upperEnvelope, upperMinAge, maxAge, // Used instead of upperMaxAge to avoid blowout at end of line
+                xScale, yScale);
+                utils_1.lineTo(path, wetherill.lowerEnvelope
+                    .vector(lowerMaxAge)
+                    .scaleBy(xScale, yScale));
+                this.addConcordiaToPath(path, wetherill.lowerEnvelope, lowerMaxAge, lowerMinAge, xScale, yScale);
+                utils_1.close(path);
+                return path.join("");
+            })
+                .attr("fill", envelopeFill)
+                .attr("opacity", envelopeOpacity || 1);
+        }
         const ageDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
         const tickValues = this.tickScale.domain([minAge, maxAge]).ticks(Math.max(3, Math.floor(ageDistance / 100)));
         const ticks = layerToDrawOn.selectAll("." + WetherillConcordia.TICK_CLASS)
@@ -14505,16 +14649,8 @@ WetherillConcordia.TICK_LABEL_CLASS = "wetherill-tick-label";
 exports.WetherillConcordia = WetherillConcordia;
 class TeraWasserburgConcordia extends ConcordiaPlotFeature {
     draw(plot) {
-        const { x: { scale: xScale }, y: { scale: yScale }, options: { lambda_235, lambda_238, R238_235S, concordia_line_fill: lineFill, concordia_line_opacity: lineOpacity, concordia_envelope_fill: envelopeFill, concordia_envelope_opacity: envelopeOpacity } } = plot;
+        const { x: { scale: xScale }, y: { scale: yScale }, options: { lambda_235, lambda_238, R238_235S, concordia_envelope, concordia_line_fill: lineFill, concordia_line_opacity: lineOpacity, concordia_envelope_fill: envelopeFill, concordia_envelope_opacity: envelopeOpacity } } = plot;
         const layerToDrawOn = plots_1.findLayer(plot, plots_1.Feature.CONCORDIA);
-        let envelope = layerToDrawOn.select(".tw-envelope");
-        if (envelope.empty()) {
-            envelope = layerToDrawOn
-                .append("path")
-                .attr("class", "tw-envelope")
-                .attr("stroke", "none")
-                .attr("shape-rendering", "geometricPrecision");
-        }
         let line = layerToDrawOn.select(".tw-line");
         if (line === null || line.empty()) {
             line = layerToDrawOn
@@ -14527,22 +14663,15 @@ class TeraWasserburgConcordia extends ConcordiaPlotFeature {
         const xDomain = xScale.domain(), xMin = Math.max(1, xDomain[0]), xMax = Math.min(6500, xDomain[1]), yDomain = yScale.domain(), yMin = Math.max(0.046, yDomain[0]), yMax = Math.min(0.625, yDomain[1]);
         const minAge = Math.max(this.constrainAge((Math.log1p(xMax) - Math.log(xMax)) / lambda_238), this.constrainAge(teraWasserburg.calculateDate(yMin, 0.0)));
         const maxAge = Math.min(this.constrainAge((Math.log1p(xMin) - Math.log(xMin)) / lambda_238), this.constrainAge(teraWasserburg.calculateDate(yMax, 0.0)));
-        // const upperMinAge = Math.max(
-        //   this.constrainAge(newtonMethodTW(teraWasserburg.upperEnvelope.x, xMin)),
-        //   this.constrainAge(newtonMethodTW(teraWasserburg.upperEnvelope.y, yMin))
-        // );
-        // const upperMaxAge = Math.min(
-        //   this.constrainAge(newtonMethodTW(teraWasserburg.upperEnvelope.x, xMax)),
-        //   this.constrainAge(newtonMethodTW(teraWasserburg.upperEnvelope.y, yMax))
-        // );
-        // const lowerMinAge = Math.max(
-        //   this.constrainAge(newtonMethodTW(teraWasserburg.lowerEnvelope.x, xMin)),
-        //   this.constrainAge(newtonMethodTW(teraWasserburg.lowerEnvelope.y, yMin))
-        // );
-        // const lowerMaxAge = Math.min(
-        //   this.constrainAge(newtonMethodTW(teraWasserburg.lowerEnvelope.x, xMax)),
-        //   this.constrainAge(newtonMethodTW(teraWasserburg.lowerEnvelope.y, yMax))
-        // );
+        const ageRange = maxAge - minAge;
+        const upperMinAge = Math.max(minAge - ageRange, // Restricts the minimum age, prevents glitchy rendering for near-horizontal segments
+        Math.min(this.constrainAge(newtonMethod(teraWasserburg.upperEnvelope.x, xMin)), this.constrainAge(newtonMethod(teraWasserburg.upperEnvelope.y, yMin))));
+        const upperMaxAge = Math.min(maxAge + ageRange, // Restricts the maximum age, prevents glitchy rendering for near-horizontal segments
+        Math.min(this.constrainAge(newtonMethod(teraWasserburg.upperEnvelope.x, xMax)), this.constrainAge(newtonMethod(teraWasserburg.upperEnvelope.y, yMax))));
+        const lowerMinAge = Math.max(minAge - ageRange, // Restricts the minimum age, prevents glitchy rendering for near-horizontal segments
+        Math.min(this.constrainAge(newtonMethod(teraWasserburg.lowerEnvelope.x, xMin)), this.constrainAge(newtonMethod(teraWasserburg.lowerEnvelope.y, yMin))));
+        const lowerMaxAge = Math.min(maxAge + ageRange, // Restricts the maximum age, prevents glitchy rendering for near-horizontal segments
+        Math.min(this.constrainAge(newtonMethod(teraWasserburg.lowerEnvelope.x, xMax)), this.constrainAge(newtonMethod(teraWasserburg.lowerEnvelope.y, yMax))));
         const startPoint = teraWasserburg.vector(minAge).scaleBy(xScale, yScale);
         const endPoint = teraWasserburg.vector(maxAge).scaleBy(xScale, yScale);
         line
@@ -14555,18 +14684,31 @@ class TeraWasserburgConcordia extends ConcordiaPlotFeature {
             .attr("stroke", lineFill)
             .attr("stroke-width", 2)
             .attr("opacity", lineOpacity || 1);
-        envelope
-            .attr("d", () => {
-            const path = [];
-            utils_1.moveTo(path, teraWasserburg.upperEnvelope.vector(minAge).scaleBy(xScale, yScale));
-            this.addConcordiaToPath(path, teraWasserburg.upperEnvelope, minAge, maxAge, xScale, yScale);
-            utils_1.lineTo(path, teraWasserburg.lowerEnvelope.vector(maxAge).scaleBy(xScale, yScale));
-            this.addConcordiaToPath(path, teraWasserburg.lowerEnvelope, maxAge, minAge, xScale, yScale);
-            utils_1.close(path);
-            return path.join("");
-        })
-            .attr("fill", envelopeFill)
-            .attr("opacity", envelopeOpacity || 1);
+        let envelope = layerToDrawOn.select(".tw-envelope");
+        if (!concordia_envelope) {
+            envelope.remove();
+        }
+        else {
+            if (envelope.empty()) {
+                envelope = layerToDrawOn
+                    .insert("path", ":first-child")
+                    .attr("class", "tw-envelope")
+                    .attr("stroke", "none")
+                    .attr("shape-rendering", "geometricPrecision");
+            }
+            envelope
+                .attr("d", () => {
+                const path = [];
+                utils_1.moveTo(path, teraWasserburg.upperEnvelope.vector(minAge).scaleBy(xScale, yScale));
+                this.addConcordiaToPath(path, teraWasserburg.upperEnvelope, upperMinAge, upperMaxAge, xScale, yScale);
+                utils_1.lineTo(path, teraWasserburg.lowerEnvelope.vector(maxAge).scaleBy(xScale, yScale));
+                this.addConcordiaToPath(path, teraWasserburg.lowerEnvelope, lowerMaxAge, lowerMinAge, xScale, yScale);
+                utils_1.close(path);
+                return path.join("");
+            })
+                .attr("fill", envelopeFill)
+                .attr("opacity", envelopeOpacity || 1);
+        }
         const ageDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
         const tickValues = this.tickScale.domain([minAge, maxAge]).ticks(Math.max(3, Math.floor(ageDistance / 100)));
         const ticks = layerToDrawOn.selectAll(".tw-tick")
@@ -14873,7 +15015,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const plots_1 = __webpack_require__(/*! ../../plots */ "./src/plots/index.ts");
 const numeric_1 = __webpack_require__(/*! numeric */ "./node_modules/numeric/numeric-1.2.6.js");
 const utils_1 = __webpack_require__(/*! ../../utils */ "./src/utils/index.ts");
-const ISOCHRON_CLASS = "matrix-isochron", CONTOUR_CLASS = "matrix-contour";
+const ISOCHRON_CLASS = "matrix-isochron", ISOCHRON_LABEL_CLASS = "matrix-isochron-label", CONTOUR_CLASS = "matrix-contour", CONTOUR_LABEL_CLASS = "matrix-contour-label";
 const INF = Number.MAX_VALUE;
 const isochronAges = [
     25000,
@@ -14994,11 +15136,48 @@ class EvolutionMatrix {
         contourPaths
             .exit()
             .remove();
+        const labels = plot.canvas.selectAll("." + ISOCHRON_LABEL_CLASS).data(isochrons);
+        labels.enter()
+            .append("text")
+            .attr("class", ISOCHRON_LABEL_CLASS)
+            .text(d => (d.age === INF) ? "INF" : d.age / 1000)
+            .attr("text-anchor", "start")
+            .attr("fill", "red")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "14px");
+        labels
+            .attr("transform", (d, i) => {
+            let x, y, xOffset, yOffset;
+            const deltaX = xScale(xEndpoints[1][i]) - xScale(xEndpoints[0][i]), deltaY = -(yScale(yEndpoints[1][i]) - yScale(yEndpoints[0][i])), slope = deltaY / deltaX, angle = -((Math.atan(slope) * (180 / Math.PI))); // Must convert from radians to degrees
+            if (R[i] >= contourYLimits[1]) {
+                // isochron intersects plot boundary at top
+                yOffset = 30;
+                xOffset = ((yOffset * deltaX) / deltaY) + 14; // +14 for the font size
+                x = plot.x.scale(T[i] * (lambda_230 / lambda_238)) - xOffset;
+                y = yOffset;
+            }
+            else if (R[i] < contourYLimits[1]) {
+                // isochron intersects plot boundary at right
+                x = plot.canvasWidth - 30;
+                y = plot.y.scale(R[i] * (lambda_234 / lambda_238));
+            }
+            return `translate (${x},${y}) rotate(${angle})`;
+        })
+            .attr("fill-opacity", (d, i) => {
+            if ((T[i] < d.xMin) || (R[i] < d.yMin)) {
+                return 0;
+            }
+            else {
+                return 1;
+            }
+        });
+        labels.exit().remove();
     }
     undraw(plot) {
         const layerToDrawOn = plots_1.findLayer(plot, plots_1.Feature.EVOLUTION);
         layerToDrawOn.selectAll("." + ISOCHRON_CLASS).remove();
         layerToDrawOn.selectAll("." + CONTOUR_CLASS).remove();
+        layerToDrawOn.selectAll("." + ISOCHRON_LABEL_CLASS).remove();
     }
 }
 exports.EvolutionMatrix = EvolutionMatrix;
@@ -15240,6 +15419,7 @@ var Feature;
     Feature["ERROR_BARS"] = "unctbars";
     Feature["CONCORDIA"] = "concordia";
     Feature["EVOLUTION"] = "evolution";
+    Feature["MCLEAN_REGRESSION"] = "mclean-regression";
 })(Feature = exports.Feature || (exports.Feature = {}));
 
 
@@ -15295,7 +15475,7 @@ class AbstractPlot {
         this.svg = d3
             .select(root)
             .append("svg")
-            .attr("id", "plot1");
+            .attr("id", "plot_svg");
         this.displayContainer = this.svg
             .append("g")
             .attr("id", "displayContainer")
@@ -15305,12 +15485,6 @@ class AbstractPlot {
             .attr("class", "title-text")
             .attr("font-family", "sans-serif")
             .attr("font-size", "24px");
-        // const titleElement = this.titleLabel.node() as SVGElement,
-        //   titleX = (this._canvasWidth / 2) - (titleElement.getBoundingClientRect().width / 2),
-        //   titleY = -(this._margin.top / 2) + (titleElement.getBoundingClientRect().height / 3);
-        // this.titleLabel
-        //   .attr("x", titleX)
-        //   .attr("y", titleY);
         this.canvas = this.displayContainer
             .append("g")
             .attr("clip-path", "url(#plotClipBox)");
@@ -15333,7 +15507,6 @@ class AbstractPlot {
             .attr("fill", "none")
             .attr("stroke", "black")
             .attr("stroke-width", "2px");
-        this.drawnFeatures = [];
     }
     get data() {
         return this._data;
@@ -15443,11 +15616,13 @@ exports.findLayer = findLayer;
 Object.defineProperty(exports, "__esModule", { value: true });
 const d3 = __webpack_require__(/*! d3 */ "./node_modules/d3/d3.js");
 const plot_abstract_1 = __webpack_require__(/*! ./plot-abstract */ "./src/plots/plot-abstract.ts");
+const const_1 = __webpack_require__(/*! ./const */ "./src/plots/const.ts");
 const ellipses_1 = __webpack_require__(/*! ../features/ellipses */ "./src/features/ellipses.ts");
 const points_1 = __webpack_require__(/*! ../features/points */ "./src/features/points.ts");
 const concordia_1 = __webpack_require__(/*! ../features/upb/concordia */ "./src/features/upb/concordia.ts");
 const evolution_1 = __webpack_require__(/*! ../features/uth/evolution */ "./src/features/uth/evolution.ts");
 const error_bars_1 = __webpack_require__(/*! ../features/error-bars */ "./src/features/error-bars.ts");
+const mclean_regression_1 = __webpack_require__(/*! ../features/java/mclean-regression */ "./src/features/java/mclean-regression.ts");
 const AXIS_CLASS = "axis";
 class ScatterPlot extends plot_abstract_1.default {
     constructor(root, data, options, layers) {
@@ -15509,6 +15684,7 @@ class ScatterPlot extends plot_abstract_1.default {
         this.features["wetherill"] = new concordia_1.WetherillConcordia();
         this.features["tera-wasserburg"] = new concordia_1.TeraWasserburgConcordia();
         this.features["evolution"] = new evolution_1.EvolutionMatrix();
+        this.features[const_1.Feature.MCLEAN_REGRESSION] = new mclean_regression_1.McLeanRegression();
         this.update();
     }
     resize() {
@@ -15578,6 +15754,14 @@ class ScatterPlot extends plot_abstract_1.default {
         }
         else {
             this.features["evolution"].undraw(this);
+        }
+        if (this.regressionBridge) {
+            if (this.options["regression_mclean" /* MCLEAN_REGRESSION */]) {
+                this.features[const_1.Feature.MCLEAN_REGRESSION].draw(this);
+            }
+            else {
+                this.features[const_1.Feature.MCLEAN_REGRESSION].undraw(this);
+            }
         }
         // Make upcalls to Java if bridge exists
         if (this.javaBridge) {

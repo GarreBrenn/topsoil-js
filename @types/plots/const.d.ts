@@ -54,5 +54,6 @@ export declare enum Feature {
     ELLIPSES = "ellipses",
     ERROR_BARS = "unctbars",
     CONCORDIA = "concordia",
-    EVOLUTION = "evolution"
+    EVOLUTION = "evolution",
+    MCLEAN_REGRESSION = "mclean-regression"
 }

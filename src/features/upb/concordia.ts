@@ -57,6 +57,7 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
       options: {
         lambda_235,
         lambda_238,
+        concordia_envelope,
         concordia_line_fill: lineFill,
         concordia_line_opacity: lineOpacity,
         concordia_envelope_fill: envelopeFill,
@@ -65,15 +66,6 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
     } = plot;
 
     const layerToDrawOn = findLayer(plot, Feature.CONCORDIA);
-
-    let envelope = layerToDrawOn.select("." + WetherillConcordia.ENVELOPE_CLASS);
-    if (envelope.empty()) {
-      envelope = layerToDrawOn
-        .append("path")
-        .attr("class", WetherillConcordia.ENVELOPE_CLASS)
-        .attr("stroke", "none")
-        .attr("shape-rendering", "geometricPrecision");
-    }
 
     let line = layerToDrawOn.select("." + WetherillConcordia.LINE_CLASS);
     if (line.empty()) {
@@ -101,22 +93,6 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
       newtonMethod(wetherill.x, xMax),
       newtonMethod(wetherill.y, yMax)
     );
-    const upperMinAge = Math.max(
-      newtonMethod(wetherill.upperEnvelope.x, xMin),
-      newtonMethod(wetherill.upperEnvelope.y, yMin)
-    );
-    const upperMaxAge = Math.max(
-      newtonMethod(wetherill.upperEnvelope.x, xMax),
-      newtonMethod(wetherill.upperEnvelope.y, yMax)
-    );
-    const lowerMinAge = Math.min(
-      newtonMethod(wetherill.lowerEnvelope.x, xMin),
-      newtonMethod(wetherill.lowerEnvelope.y, yMin)
-    );
-    const lowerMaxAge = Math.min(
-      newtonMethod(wetherill.lowerEnvelope.x, xMax),
-      newtonMethod(wetherill.lowerEnvelope.y, yMax)
-    );
 
     const startPoint = wetherill.vector(minAge).scaleBy(xScale, yScale);
     const endPoint = wetherill.vector(maxAge).scaleBy(xScale, yScale);
@@ -133,82 +109,114 @@ export class WetherillConcordia extends ConcordiaPlotFeature {
       .attr("opacity", lineOpacity || 1)
       .attr("stroke-width", 2);
 
-    // build the uncertainty envelope
-    envelope
-      .attr("d", () => {
-        const path: (string | number)[] = [];
-        moveTo(
-          path,
-          wetherill.upperEnvelope
-            .vector(upperMinAge)
-            .scaleBy(xScale, yScale)
-        );
-        this.addConcordiaToPath(
-          path,
-          wetherill.upperEnvelope,
-          upperMinAge,
-          upperMaxAge,
-          xScale,
-          yScale
-        );
-        lineTo(
-          path,
-          wetherill.lowerEnvelope
-            .vector(lowerMaxAge)
-            .scaleBy(xScale, yScale)
-        );
-        this.addConcordiaToPath(
-          path,
-          wetherill.lowerEnvelope,
-          lowerMaxAge,
-          lowerMinAge,
-          xScale,
-          yScale
-        );
-        close(path);
-        return path.join("");
-      })
-      .attr("fill", envelopeFill)
-      .attr("opacity", envelopeOpacity || 1);
+    let envelope = layerToDrawOn.select("." + WetherillConcordia.ENVELOPE_CLASS);
+    if (! concordia_envelope) {
+      envelope.remove();
+    } else {
+    
+      if (envelope.empty()) {
+        envelope = layerToDrawOn
+          .insert("path", ":first-child")
+          .attr("class", WetherillConcordia.ENVELOPE_CLASS)
+          .attr("stroke", "none")
+          .attr("shape-rendering", "geometricPrecision");
+      }
 
-    const ageDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
-    const tickValues = this.tickScale.domain([minAge, maxAge]).ticks(Math.max(3, Math.floor(ageDistance / 100)));
+      const upperMinAge = Math.max(
+        newtonMethod(wetherill.upperEnvelope.x, xMin),
+        newtonMethod(wetherill.upperEnvelope.y, yMin)
+      );
+      const upperMaxAge = Math.max(
+        newtonMethod(wetherill.upperEnvelope.x, xMax),
+        newtonMethod(wetherill.upperEnvelope.y, yMax)
+      );
+      const lowerMinAge = Math.min(
+        newtonMethod(wetherill.lowerEnvelope.x, xMin),
+        newtonMethod(wetherill.lowerEnvelope.y, yMin)
+      );
+      const lowerMaxAge = Math.min(
+        newtonMethod(wetherill.lowerEnvelope.x, xMax),
+        newtonMethod(wetherill.lowerEnvelope.y, yMax)
+      );
 
-    const ticks = layerToDrawOn.selectAll("." + WetherillConcordia.TICK_CLASS)
-      .data(tickValues);
-    ticks
-      .enter()
-      .append("circle")
-      .attr("class", WetherillConcordia.TICK_CLASS)
-      .attr("r", 5)
-      .style("stroke-width", 2)
-      .style("stroke", "black")
-      .style("fill", "white");
-    ticks
-      .attr("cx", tick => {
-        return xScale(wetherill.x.calculate(tick));
-      })
-      .attr("cy", tick => {
-        return yScale(wetherill.y.calculate(tick));
-      });
-    ticks
-      .exit()
-      .remove();
+      // build the uncertainty envelope
+      envelope
+        .attr("d", () => {
+          const path: (string | number)[] = [];
+          moveTo(
+            path,
+            wetherill.upperEnvelope
+              .vector(upperMinAge)
+              .scaleBy(xScale, yScale)
+          );
+          this.addConcordiaToPath(
+            path,
+            wetherill.upperEnvelope,
+            upperMinAge,
+            maxAge,   // Used instead of upperMaxAge to avoid blowout at end of line
+            xScale,
+            yScale
+          );
+          lineTo(
+            path,
+            wetherill.lowerEnvelope
+              .vector(lowerMaxAge)
+              .scaleBy(xScale, yScale)
+          );
+          this.addConcordiaToPath(
+            path,
+            wetherill.lowerEnvelope,
+            lowerMaxAge,
+            lowerMinAge,
+            xScale,
+            yScale
+          );
+          close(path);
+          return path.join("");
+        })
+        .attr("fill", envelopeFill)
+        .attr("opacity", envelopeOpacity || 1);
 
-    const tickLabels = layerToDrawOn.selectAll("." + WetherillConcordia.TICK_LABEL_CLASS)
-      .data(tickValues);
-    tickLabels
-      .enter()
-      .append("text")
-      .attr("font-family", "sans-serif")
-      .attr("class", WetherillConcordia.TICK_LABEL_CLASS);
-    tickLabels
-      .text(age => age / 1000000)
-      .attr("x", age => xScale(wetherill.x.calculate(age)) + 12)
-      .attr("y", age => yScale(wetherill.y.calculate(age)) + 5);
-    tickLabels
-      .exit()
-      .remove();
+      }
+
+      const ageDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
+      const tickValues = this.tickScale.domain([minAge, maxAge]).ticks(Math.max(3, Math.floor(ageDistance / 100)));
+
+      const ticks = layerToDrawOn.selectAll("." + WetherillConcordia.TICK_CLASS)
+        .data(tickValues);
+      ticks
+        .enter()
+        .append("circle")
+        .attr("class", WetherillConcordia.TICK_CLASS)
+        .attr("r", 5)
+        .style("stroke-width", 2)
+        .style("stroke", "black")
+        .style("fill", "white");
+      ticks
+        .attr("cx", tick => {
+          return xScale(wetherill.x.calculate(tick));
+        })
+        .attr("cy", tick => {
+          return yScale(wetherill.y.calculate(tick));
+        });
+      ticks
+        .exit()
+        .remove();
+
+      const tickLabels = layerToDrawOn.selectAll("." + WetherillConcordia.TICK_LABEL_CLASS)
+        .data(tickValues);
+      tickLabels
+        .enter()
+        .append("text")
+        .attr("font-family", "sans-serif")
+        .attr("class", WetherillConcordia.TICK_LABEL_CLASS);
+      tickLabels
+        .text(age => age / 1000000)
+        .attr("x", age => xScale(wetherill.x.calculate(age)) + 12)
+        .attr("y", age => yScale(wetherill.y.calculate(age)) + 5);
+      tickLabels
+        .exit()
+        .remove();
 
   }
 
@@ -256,6 +264,7 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
         lambda_235,
         lambda_238,
         R238_235S,
+        concordia_envelope,
         concordia_line_fill: lineFill,
         concordia_line_opacity: lineOpacity,
         concordia_envelope_fill: envelopeFill,
@@ -264,15 +273,6 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
     } = plot;
 
     const layerToDrawOn = findLayer(plot, Feature.CONCORDIA);
-
-    let envelope = layerToDrawOn.select(".tw-envelope");
-    if (envelope.empty()) {
-      envelope = layerToDrawOn
-        .append("path")
-        .attr("class", "tw-envelope")
-        .attr("stroke", "none")
-        .attr("shape-rendering", "geometricPrecision");
-    }
 
     let line = layerToDrawOn.select(".tw-line")
     if (line === null || line.empty()) {
@@ -304,24 +304,36 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
       this.constrainAge((Math.log1p(xMin) - Math.log(xMin)) / lambda_238),
       this.constrainAge(teraWasserburg.calculateDate(yMax, 0.0))
     );
+    const ageRange = maxAge - minAge;
 
-    // const upperMinAge = Math.max(
-    //   this.constrainAge(newtonMethodTW(teraWasserburg.upperEnvelope.x, xMin)),
-    //   this.constrainAge(newtonMethodTW(teraWasserburg.upperEnvelope.y, yMin))
-    // );
-
-    // const upperMaxAge = Math.min(
-    //   this.constrainAge(newtonMethodTW(teraWasserburg.upperEnvelope.x, xMax)),
-    //   this.constrainAge(newtonMethodTW(teraWasserburg.upperEnvelope.y, yMax))
-    // );
-    // const lowerMinAge = Math.max(
-    //   this.constrainAge(newtonMethodTW(teraWasserburg.lowerEnvelope.x, xMin)),
-    //   this.constrainAge(newtonMethodTW(teraWasserburg.lowerEnvelope.y, yMin))
-    // );
-    // const lowerMaxAge = Math.min(
-    //   this.constrainAge(newtonMethodTW(teraWasserburg.lowerEnvelope.x, xMax)),
-    //   this.constrainAge(newtonMethodTW(teraWasserburg.lowerEnvelope.y, yMax))
-    // );
+    const upperMinAge = Math.max(
+      minAge - ageRange,    // Restricts the minimum age, prevents glitchy rendering for near-horizontal segments
+      Math.min(
+        this.constrainAge(newtonMethod(teraWasserburg.upperEnvelope.x, xMin)),
+        this.constrainAge(newtonMethod(teraWasserburg.upperEnvelope.y, yMin))
+      )
+    );
+    const upperMaxAge = Math.min(
+      maxAge + ageRange,    // Restricts the maximum age, prevents glitchy rendering for near-horizontal segments
+      Math.min(
+        this.constrainAge(newtonMethod(teraWasserburg.upperEnvelope.x, xMax)),
+        this.constrainAge(newtonMethod(teraWasserburg.upperEnvelope.y, yMax))
+      )
+    );
+    const lowerMinAge = Math.max(
+      minAge - ageRange,    // Restricts the minimum age, prevents glitchy rendering for near-horizontal segments
+      Math.min(
+        this.constrainAge(newtonMethod(teraWasserburg.lowerEnvelope.x, xMin)),
+        this.constrainAge(newtonMethod(teraWasserburg.lowerEnvelope.y, yMin))
+      )
+    );
+    const lowerMaxAge = Math.min(
+      maxAge + ageRange,    // Restricts the maximum age, prevents glitchy rendering for near-horizontal segments
+      Math.min(
+        this.constrainAge(newtonMethod(teraWasserburg.lowerEnvelope.x, xMax)),
+        this.constrainAge(newtonMethod(teraWasserburg.lowerEnvelope.y, yMax))
+      )
+    );
 
     const startPoint = teraWasserburg.vector(minAge).scaleBy(xScale, yScale);
     const endPoint = teraWasserburg.vector(maxAge).scaleBy(xScale, yScale);
@@ -337,18 +349,33 @@ export class TeraWasserburgConcordia extends ConcordiaPlotFeature {
       .attr("stroke-width", 2)
       .attr("opacity", lineOpacity || 1);
 
-    envelope
-      .attr("d", () => {
-        const path: (string | number)[] = [];
-        moveTo(path, teraWasserburg.upperEnvelope.vector(minAge).scaleBy(xScale, yScale));
-        this.addConcordiaToPath(path, teraWasserburg.upperEnvelope, minAge, maxAge, xScale, yScale);
-        lineTo(path, teraWasserburg.lowerEnvelope.vector(maxAge).scaleBy(xScale, yScale));
-        this.addConcordiaToPath(path, teraWasserburg.lowerEnvelope, maxAge, minAge, xScale, yScale);
-        close(path);
-        return path.join("");
-      })
-      .attr("fill", envelopeFill)
-      .attr("opacity", envelopeOpacity || 1);
+    let envelope = layerToDrawOn.select(".tw-envelope");
+    if (! concordia_envelope) {
+      envelope.remove();
+    } else {
+
+      if (envelope.empty()) {
+        envelope = layerToDrawOn
+          .insert("path", ":first-child")
+          .attr("class", "tw-envelope")
+          .attr("stroke", "none")
+          .attr("shape-rendering", "geometricPrecision");
+      }
+
+      envelope
+        .attr("d", () => {
+          const path: (string | number)[] = [];
+          moveTo(path, teraWasserburg.upperEnvelope.vector(minAge).scaleBy(xScale, yScale));
+          this.addConcordiaToPath(path, teraWasserburg.upperEnvelope, upperMinAge, upperMaxAge, xScale, yScale);
+          lineTo(path, teraWasserburg.lowerEnvelope.vector(maxAge).scaleBy(xScale, yScale));
+          this.addConcordiaToPath(path, teraWasserburg.lowerEnvelope, lowerMaxAge, lowerMinAge, xScale, yScale);
+          close(path);
+          return path.join("");
+        })
+        .attr("fill", envelopeFill)
+        .attr("opacity", envelopeOpacity || 1);
+
+    }
 
     const ageDistance = Math.sqrt(Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2));
     const tickValues = this.tickScale.domain([minAge, maxAge]).ticks(Math.max(3, Math.floor(ageDistance / 100)));

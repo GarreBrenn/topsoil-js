@@ -1,12 +1,14 @@
 import * as d3 from "d3";
 import AbstractPlot from "./plot-abstract";
-import { DataEntry, Config, Option } from "./const";
+import { DataEntry, Config, Option, Feature } from "./const";
 import { Ellipses } from "../features/ellipses";
 import { Points } from "../features/points";
 import { WetherillConcordia, TeraWasserburgConcordia } from "../features/upb/concordia";
 import { EvolutionMatrix } from "../features/uth/evolution";
 import { ErrorBars } from "../features/error-bars";
 import { LayerDefinition } from "./plot";
+import { McLeanRegression } from "../features/java/mclean-regression";
+import { RegressionBridge } from '../utils/bridge';
 
 const AXIS_CLASS = "axis";
 
@@ -26,6 +28,8 @@ export default class ScatterPlot extends AbstractPlot {
   private xAxisG: d3.Selection<SVGGElement>;
   private yLabel: d3.Selection<SVGElement>;
   private yAxisG: d3.Selection<SVGGElement>;
+
+  regressionBridge: RegressionBridge;
 
   constructor(
     readonly root: HTMLDivElement,
@@ -100,6 +104,7 @@ export default class ScatterPlot extends AbstractPlot {
     this.features["wetherill"] = new WetherillConcordia();
     this.features["tera-wasserburg"] = new TeraWasserburgConcordia();
     this.features["evolution"] = new EvolutionMatrix();
+    this.features[Feature.MCLEAN_REGRESSION] = new McLeanRegression();
 
     this.update();
   }
@@ -182,6 +187,14 @@ export default class ScatterPlot extends AbstractPlot {
       this.features["evolution"].draw(this);
     } else {
       this.features["evolution"].undraw(this);
+    }
+
+    if (this.regressionBridge) {
+      if (this.options[Option.MCLEAN_REGRESSION]) {
+        this.features[Feature.MCLEAN_REGRESSION].draw(this);
+      } else {
+        this.features[Feature.MCLEAN_REGRESSION].undraw(this);
+      }
     }
 
     // Make upcalls to Java if bridge exists
