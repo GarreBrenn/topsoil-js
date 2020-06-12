@@ -69,13 +69,14 @@ export class McLeanRegression implements FeatureInterface {
         .attr("stroke", "black")
         .attr("stroke-width", 1);
     }
-    
+
     // Update line
-    const x1 = 0,
-          y1 = this.yIntercept,
+    // @bowring 12 JUNE 2020 : extended plotting to negative X
+    const x1 = xScale.domain()[0],
+          y1 = (this.slope * x1) + this.yIntercept,
           x2 = xScale.domain()[1],
           y2 = (this.slope * x2) + this.yIntercept;
-    
+
     line.attr("x1", xScale(x1))
         .attr("y1", yScale(y1))
         .attr("x2", xScale(x2))
@@ -152,12 +153,12 @@ export class McLeanRegression implements FeatureInterface {
 
     // Draw info box
     let info = plot.displayContainer.select("." + McLeanRegression.INFO_CLASS);
-    
+
     if (info.empty()) {
       info = plot.displayContainer.append("text")
         .attr("class", McLeanRegression.INFO_CLASS)
         .attr("font-family", "sans-serif")
-        .attr("font-size", "14px")
+        .attr("font-size", "12px")
         .attr("x", 0)
         .attr("y", -20)
         .attr("fill", "black");
