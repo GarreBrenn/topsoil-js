@@ -123,7 +123,8 @@ export class McLeanRegression implements FeatureInterface {
       this.envelopeUpperBound = [];
 
       if (tIncrement > 0) {
-        for (let tStep = (0.9 * xMin); tStep <= (1.1 * xMax); tStep += tIncrement) {
+        // @bowring changed step math to handle tiny values 14 June 2020
+        for (let tStep = (xMin - tIncrement * 5); tStep <= (xMax + tIncrement * 5); tStep += tIncrement) {
           const vperp = [[-vYVar, vXVar]],
                 Jxyab = [[0, 0], [1, tStep]],
                 dot1 = dot(vperp, Jxyab),
