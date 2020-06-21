@@ -165,10 +165,10 @@ export class McLeanRegression implements FeatureInterface {
         .attr("fill", "black");
     }
 
-    info.text("Regression slope: " + this.slope);
+    info.text("Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5));
     let infoWidth = (info.node() as SVGTextElement).getBBox().width;
     info
-      .attr("x", (plot.canvasWidth - 30) - infoWidth);
+      .attr("x", 0);
 
   }
 

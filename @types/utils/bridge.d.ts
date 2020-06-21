@@ -6,8 +6,10 @@ export interface RegressionBridge {
     fitLineToDataFor2D(x: string, y: string, x1sigmaAbs: string, y1SigmaAbs: string, rhos: string): McLeanRegressionLineInterface;
     getAX(): number;
     getIntercept(): number;
+    getRoundedIntercept(digits: number): number;
     getVectorX(): number;
     getSlope(): number;
+    getRoundedSlope(digits: number): number;
     getV(): string;
     getSav(): string;
 }
