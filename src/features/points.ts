@@ -29,7 +29,7 @@ export const Points = {
       .style("stroke", d => {
         return d.selected ? "none" : fill;
       })
-      .attr("opacity", opacity || 1)
+      .attr("opacity", d => d.selected || plot.options.show_unincluded ? opacity || 1 : 0)
       .attr("cx", d => plot.x.scale(d.x))
       .attr("cy", d => plot.y.scale(d.y));
   },

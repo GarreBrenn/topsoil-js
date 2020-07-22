@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Topsoil Test</title>
+  <script src="https://unpkg.com/split.js/dist/split.min.js"></script>
+  <script src="../../dist/topsoil.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="demo-container">
+    <div id="scatter-plot" class="split"></div>
+    <div id="options-panel" class="split">
+      <div id="options-panel-inner">
+
+        <div class="option">
+          <label for="title">Title:</label>
+          <input id="title" type="text" name="title" class="option-control" oninput="setOption(event)">
+        </div>
+        <div class="option">
+          <label for="x_axis">X Axis:</label>
+          <input id="x_axis" type="text" name="x_axis" class="option-control" oninput="setOption(event)">
+        </div>
+        <div class="option">
+          <label for="y_axis">Y Axis:</label>
+          <input id="y_axis" type="text" name="y_axis" class="option-control" oninput="setOption(event)">
+        </div>
+
+        <div class="horizontal divider"></div>
+
+        <div class="option">
+          <label for="isotope_system">Iso. System:</label>
+          <select id="isotope_system" name="isotope_system" disabled oninput="setOption(event)">
+            <option value="Uranium Lead">U-Pb</option>
+            <option value="Uranium Lead">U-Th</option>
+          </select>
+        </div>
+        <div class="option">
+          <label for="uncertainty">Uncertainty:</label>
+          <select id="uncertainty" name="uncertainty" oninput="setOption(event)">
+            <option value="1">1σ</option>
+            <option value="2">2σ</option>
+            <option value="2.4477">95% Confidence</option>
+          </select>
+        </div>
+
+        <div class="horizontal divider"></div>
+
+        <div class="option">
+          <label for="points">Points:</label>
+          <div class="h-center">
+            <input id="points" name="points" type="checkbox" oninput="setOption(event)">
+            <input id="points_fill" name="points_fill" type="color" oninput="setOption(event)">
+          </div>
+        </div>
+        <div class="option">
+          <label for="ellipses">Ellipses:</label>
+          <div class="h-center">
+            <input id="ellipses" name="ellipses" type="checkbox" oninput="setOption(event)">
+            <input id="ellipses_fill" name="ellipses_fill" type="color" oninput="setOption(event)">
+          </div>
+        </div>
+        <div class="option">
+          <label for="error_bars">Error Bars:</label>
+          <div class="h-center">
+            <input id="error_bars" name="error_bars" type="checkbox" oninput="setOption(event)">
+            <input id="error_bars_fill" name="error_bars_fill" type="color" oninput="setOption(event)">
+          </div>
+        </div>
+
+        <div class="horizontal divider"></div>
+
+        <div class="option">
+          <label for="concordia_line">Concordia:</label>
+          <div class="d-flex flex-column align-items-stretch">
+            <div class="h-center">
+              <input id="concordia_line" name="concordia_line" type="checkbox" oninput="setOption(event)">
+              <select id="concordia_type" name="concordia_type" class="flex-grow-1">
+                <option value="wetherill">Wetherill</option>
+                <option value="tera-wasserburg">Tera-Wasserburg</option>
+              </select>
+            </div>
+            <div class="h-center mt-1">
+              <label for="concordia_line_fill" class="small-label mr-1">Line:</label>
+              <input id="concordia_line_fill" name="concordia_line_fill" type="color" class="flex-1" oninput="setOption(event)">
+              <label for="concordia_envelope_fill" class="small-label ml-2 mr-1">Envelope:</label>
+              <input id="concortia_envelope_fill" name="concortia_envelope_fill" type="color" class="flex-1" oninput="setOption(event)">
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="index.js"></script>
+</body>
+</html>

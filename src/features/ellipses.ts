@@ -51,7 +51,8 @@ export const Ellipses = {
         return d.selected ? fill : "gray";
       })
       .attr("fill-opacity", opacity * 0.2)
-      .attr("stroke", "black");
+      .attr("stroke", "black")
+      .attr("opacity", d => d.selected || plot.options.show_unincluded ? 1 : 0);
   },
   
   undraw(plot: ScatterPlot): void {

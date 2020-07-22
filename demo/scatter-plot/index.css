@@ -1,0 +1,99 @@
+/* split.js */
+.gutter {
+  background-color: #eee;
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+.gutter.gutter-horizontal {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+  cursor: col-resize;
+}
+.gutter.gutter-vertical {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+  cursor: row-resize;
+}
+.split {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+/* DEMO */
+html, body, .demo-container {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
+label {
+  color: slategray;
+  margin: 0;
+}
+.h-center {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+}
+.flex-0 {
+  flex: 0;
+}
+.flex-1 {
+  flex: 1;
+}
+.small-label {
+  font-size: 12px;
+}
+.demo-container {
+  display: flex;
+  flex-flow: row;
+  align-items: stretch;
+}
+#scatter-plot {
+  
+}
+#options-panel {
+  position: relative;
+  background-color: lightgray;
+}
+#options-panel > #options-panel-inner {
+  display: inline-block;
+  padding: 15px;
+  height: calc(100% - 30px);
+  width: 100%;
+  max-width: 500px;
+}
+#options-panel > #options-panel-inner > *:not(:last-child) {
+  margin-bottom: 10px;
+}
+#options-panel .option {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+}
+#options-panel .option > label {
+  font-size: 14px;
+  width: 100px;
+}
+#options-panel .option > label ~ * {
+  margin-right: 5px;
+}
+#options-panel .option input[type="checkbox"] {
+  margin-right: 10px;
+  margin-left: 0;
+  flex: 0;
+}
+#options-panel .option :not(label) {
+  flex: 1 0 auto;
+}
+#options-panel .divider {
+  background-color: slategray;
+}
+#options-panel .divider.horizontal {
+  height: 1px;
+  width: 100%;
+  margin: 15px 0 15px 10px;
+}
+#options-panel .divider.vertical {
+  height: 100%;
+  width: 1px;
+  margin: 10px 15px 0px 15px;
+}
