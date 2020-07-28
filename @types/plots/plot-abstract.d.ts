@@ -22,6 +22,8 @@ export default abstract class AbstractPlot implements Plot {
     readonly titleLabel: d3.Selection<SVGElement>;
     readonly background: d3.Selection<SVGGElement>;
     readonly border: d3.Selection<SVGGElement>;
+    readonly leftTextBox: d3.Selection<SVGElement>;
+    readonly rightTextBox: d3.Selection<SVGElement>;
     javaBridge: JavaBridge;
     constructor(root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition);
     data: DataEntry[];
@@ -37,5 +39,7 @@ export default abstract class AbstractPlot implements Plot {
     readonly canvasWidth: number;
     readonly canvasHeight: number;
     protected resize(): void;
+    protected leftText(): string;
+    protected rightText(): string;
     abstract update(): void;
 }

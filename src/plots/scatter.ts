@@ -139,6 +139,18 @@ export default class ScatterPlot extends AbstractPlot {
 
   }
 
+  protected leftText(): string {
+    let text = "";
+    // TODO: Get text for left textbox
+    return text;
+  }
+
+  protected rightText(): string {
+    let text = "";
+    // TODO: Get text for right textbox
+    return text;
+  }
+
   update() {
     this.resize();
 

@@ -28,6 +28,9 @@ export default abstract class AbstractPlot implements Plot {
   readonly background: d3.Selection<SVGGElement>;
   readonly border: d3.Selection<SVGGElement>;
 
+  readonly leftTextBox: d3.Selection<SVGElement>;
+  readonly rightTextBox: d3.Selection<SVGElement>;
+
   javaBridge: JavaBridge;
 
   constructor(readonly root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition) {
@@ -54,6 +57,18 @@ export default abstract class AbstractPlot implements Plot {
       .attr("class", "title-text")
       .attr("font-family", "sans-serif")
       .attr("font-size", "24px");
+
+    this.leftTextBox = this.svg
+      .append("text")
+      .attr("class", "left textbox")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "10px")
+
+    this.rightTextBox = this.svg
+      .append("text")
+      .attr("class", "right textbox")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "10px")
 
     this.canvas = this.displayContainer
       .append("g")
@@ -146,10 +161,36 @@ export default abstract class AbstractPlot implements Plot {
       .attr("width", this._canvasWidth)
       .attr("height", this._canvasHeight);
 
+    const titleDimensions = (this.titleLabel.node() as SVGElement).getBoundingClientRect();
+
     this.titleLabel
       .text(this._options.title)
-      .attr("x", (this._canvasWidth / 2) - ((this.titleLabel.node() as SVGElement).getBoundingClientRect().width / 2))
-      .attr("y", -(this._margin.top / 2) + ((this.titleLabel.node() as SVGElement).getBoundingClientRect().height / 3));
+      .attr("x", (this._canvasWidth / 2) - (titleDimensions.width / 2))
+      .attr("y", -(this._margin.top / 2) + (titleDimensions.height / 3));
+
+    const textBoxWidth = (width / 2) - (titleDimensions.width / 2) - 10;
+
+    this.leftTextBox
+      .text(this.leftText())
+      .attr("x", /* TODO: positioning */)
+      .attr("y", /* TODO: positioning */)
+      .attr("fill", "red")
+      .attr("width", textBoxWidth);
+
+    this.rightTextBox
+      .text(this.rightText())
+      .attr("x", /* TODO: positioning */)
+      .attr("y", /* TODO: positioning */)
+      .attr("fill", "red")
+      .attr("width", textBoxWidth);
+  }
+
+  protected leftText(): string {
+    return "";
+  }
+
+  protected rightText(): string {
+    return "";
   }
 
   abstract update(): void;
