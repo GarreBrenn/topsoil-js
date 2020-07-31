@@ -146,8 +146,17 @@ export default class ScatterPlot extends AbstractPlot {
   }
 
   protected rightText(): string {
-    let text = "";
-    // TODO: Get text for right textbox
+    let uncertainty: string = "" + this.options[Option.UNCERTAINTY];
+    let text = "Uncertainty:"
+
+    if (uncertainty == "1" || uncertainty == "2") {
+      text += " " + uncertainty + "σ";
+    } else if (uncertainty == "2.4477") {
+      text += " " + "95% Confidence";
+    } else {
+      text += " undefined"
+    }
+    
     return text;
   }
 

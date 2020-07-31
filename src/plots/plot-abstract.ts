@@ -62,13 +62,13 @@ export default abstract class AbstractPlot implements Plot {
       .append("text")
       .attr("class", "left textbox")
       .attr("font-family", "sans-serif")
-      .attr("font-size", "10px")
+      .attr("font-size", "15px")
 
     this.rightTextBox = this.svg
       .append("text")
       .attr("class", "right textbox")
       .attr("font-family", "sans-serif")
-      .attr("font-size", "10px")
+      .attr("font-size", "15px")
 
     this.canvas = this.displayContainer
       .append("g")
@@ -170,17 +170,20 @@ export default abstract class AbstractPlot implements Plot {
 
     const textBoxWidth = (width / 2) - (titleDimensions.width / 2) - 10;
 
+    //TODO: correct positioning
     this.leftTextBox
       .text(this.leftText())
-      .attr("x", /* TODO: positioning */)
-      .attr("y", /* TODO: positioning */)
+      .attr("x", ((width - this._canvasWidth) / 2))
+      .attr("y", ((height - this._canvasHeight) / 2))
       .attr("fill", "red")
       .attr("width", textBoxWidth);
 
+    //TODO: correct positioning
     this.rightTextBox
       .text(this.rightText())
-      .attr("x", /* TODO: positioning */)
-      .attr("y", /* TODO: positioning */)
+      .attr("text-anchor", "end")
+      .attr("x", this._canvasWidth + ((width - this._canvasWidth) / 2))
+      .attr("y", ((height - this._canvasHeight) / 2))
       .attr("fill", "red")
       .attr("width", textBoxWidth);
   }

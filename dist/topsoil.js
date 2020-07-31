@@ -14436,6 +14436,7 @@ class McLeanRegression {
                 .attr("y", -20)
                 .attr("fill", "black");
         }
+        //TODO: replace info with leftText()
         info.text("Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5));
         let infoWidth = info.node().getBBox().width;
         info
@@ -15523,12 +15524,12 @@ class AbstractPlot {
             .append("text")
             .attr("class", "left textbox")
             .attr("font-family", "sans-serif")
-            .attr("font-size", "10px");
+            .attr("font-size", "15px");
         this.rightTextBox = this.svg
             .append("text")
             .attr("class", "right textbox")
             .attr("font-family", "sans-serif")
-            .attr("font-size", "10px");
+            .attr("font-size", "15px");
         this.canvas = this.displayContainer
             .append("g")
             .attr("clip-path", "url(#plotClipBox)");
@@ -15606,16 +15607,19 @@ class AbstractPlot {
             .attr("x", (this._canvasWidth / 2) - (titleDimensions.width / 2))
             .attr("y", -(this._margin.top / 2) + (titleDimensions.height / 3));
         const textBoxWidth = (width / 2) - (titleDimensions.width / 2) - 10;
+        //TODO: correct positioning
         this.leftTextBox
             .text(this.leftText())
-            .attr("x")
-            .attr("y")
+            .attr("x", ((width - this._canvasWidth) / 2))
+            .attr("y", ((height - this._canvasHeight) / 2))
             .attr("fill", "red")
             .attr("width", textBoxWidth);
+        //TODO: correct positioning
         this.rightTextBox
             .text(this.rightText())
-            .attr("x")
-            .attr("y")
+            .attr("text-anchor", "end")
+            .attr("x", this._canvasWidth + ((width - this._canvasWidth) / 2))
+            .attr("y", ((height - this._canvasHeight) / 2))
             .attr("fill", "red")
             .attr("width", textBoxWidth);
     }
@@ -15775,8 +15779,17 @@ class ScatterPlot extends plot_abstract_1.default {
         return text;
     }
     rightText() {
-        let text = "";
-        // TODO: Get text for right textbox
+        let uncertainty = "" + this.options["uncertainty" /* UNCERTAINTY */];
+        let text = "Uncertainty:";
+        if (uncertainty == "1" || uncertainty == "2") {
+            text += " " + uncertainty + "σ";
+        }
+        else if (uncertainty == "2.4477") {
+            text += " " + "95% Confidence";
+        }
+        else {
+            text += " undefined";
+        }
         return text;
     }
     update() {
