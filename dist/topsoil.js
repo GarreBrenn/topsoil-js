@@ -14425,22 +14425,6 @@ class McLeanRegression {
             lowerEnvelope.attr("d", lineGenerator(this.envelopeLowerBound));
             upperEnvelope.attr("d", lineGenerator(this.envelopeUpperBound));
         }
-        // Draw info box
-        let info = plot.displayContainer.select("." + McLeanRegression.INFO_CLASS);
-        if (info.empty()) {
-            info = plot.displayContainer.append("text")
-                .attr("class", McLeanRegression.INFO_CLASS)
-                .attr("font-family", "sans-serif")
-                .attr("font-size", "12px")
-                .attr("x", 0)
-                .attr("y", -20)
-                .attr("fill", "black");
-        }
-        //TODO: replace info with leftText()
-        info.text("Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5));
-        let infoWidth = info.node().getBBox().width;
-        info
-            .attr("x", 0);
     }
     undraw(plot) {
         const layerToDrawOn = plots_1.findLayer(plot, plots_1.Feature.MCLEAN_REGRESSION);
@@ -15776,13 +15760,18 @@ class ScatterPlot extends plot_abstract_1.default {
     leftText() {
         const defaultText = "";
         let text = "";
-        if (this.regressionBridge) {
+        if (this.options.regression_mclean == true) {
             text = "regression is on";
-            text = "" + this.regressionBridge;
-            //text = "Slope: " + this.regressionBridge.getRoundedSlope(5) + ", y-intercept: " + this.regressionBridge.getRoundedIntercept(5);
+            //text = "" + this.options.regression_mclean;
+            try {
+                text = "Slope: " + this.regressionBridge.getRoundedSlope(5) + ", y-intercept: " + this.regressionBridge.getRoundedIntercept(5);
+            }
+            catch (e) {
+                text = e;
+            }
         }
-        if (!this.regressionBridge) {
-            text = "turned off";
+        else {
+            text = defaultText;
         }
         return text;
     }

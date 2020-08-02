@@ -143,13 +143,17 @@ export default class ScatterPlot extends AbstractPlot {
     const defaultText = "";
     let text = "";
     
-    if (this.regressionBridge) {
+    if (this.options.regression_mclean == true) {
       text = "regression is on";
-      text = "" + this.regressionBridge;
-      //text = "Slope: " + this.regressionBridge.getRoundedSlope(5) + ", y-intercept: " + this.regressionBridge.getRoundedIntercept(5);
-    }
-    if (!this.regressionBridge) {
-      text = "turned off";
+      //text = "" + this.options.regression_mclean;
+      try {
+        text = "Slope: " + this.regressionBridge.getRoundedSlope(5) + ", y-intercept: " + this.regressionBridge.getRoundedIntercept(5);
+      } catch (e) {
+        text = e;
+      }
+  
+    } else {
+      text = defaultText;
     }
     
     return text;
