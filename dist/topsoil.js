@@ -15774,8 +15774,16 @@ class ScatterPlot extends plot_abstract_1.default {
         this.yAxisG.call(this.y.axis);
     }
     leftText() {
+        const defaultText = "";
         let text = "";
-        // TODO: Get text for left textbox
+        if (this.regressionBridge) {
+            text = "regression is on";
+            text = "" + this.regressionBridge;
+            //text = "Slope: " + this.regressionBridge.getRoundedSlope(5) + ", y-intercept: " + this.regressionBridge.getRoundedIntercept(5);
+        }
+        if (!this.regressionBridge) {
+            text = "turned off";
+        }
         return text;
     }
     rightText() {
