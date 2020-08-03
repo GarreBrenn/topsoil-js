@@ -15595,7 +15595,7 @@ class AbstractPlot {
         this.leftTextBox
             .text(this.leftText())
             .attr("x", ((width - this._canvasWidth) / 2))
-            .attr("y", ((height - this._canvasHeight) / 2))
+            .attr("y", ((height - this._canvasHeight) / 2) + 10)
             .attr("fill", "red")
             .attr("width", textBoxWidth);
         //TODO: correct positioning
@@ -15603,7 +15603,7 @@ class AbstractPlot {
             .text(this.rightText())
             .attr("text-anchor", "end")
             .attr("x", this._canvasWidth + ((width - this._canvasWidth) / 2))
-            .attr("y", ((height - this._canvasHeight) / 2))
+            .attr("y", ((height - this._canvasHeight) / 2) + 10)
             .attr("fill", "red")
             .attr("width", textBoxWidth);
     }

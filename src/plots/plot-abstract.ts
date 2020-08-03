@@ -174,7 +174,7 @@ export default abstract class AbstractPlot implements Plot {
     this.leftTextBox
       .text(this.leftText())
       .attr("x", ((width - this._canvasWidth) / 2))
-      .attr("y", ((height - this._canvasHeight) / 2))
+      .attr("y", ((height - this._canvasHeight) / 2) + 10)
       .attr("fill", "red")
       .attr("width", textBoxWidth);
 
@@ -183,7 +183,7 @@ export default abstract class AbstractPlot implements Plot {
       .text(this.rightText())
       .attr("text-anchor", "end")
       .attr("x", this._canvasWidth + ((width - this._canvasWidth) / 2))
-      .attr("y", ((height - this._canvasHeight) / 2))
+      .attr("y", ((height - this._canvasHeight) / 2) + 10)
       .attr("fill", "red")
       .attr("width", textBoxWidth);
   }
