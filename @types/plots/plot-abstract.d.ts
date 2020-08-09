@@ -39,7 +39,7 @@ export default abstract class AbstractPlot implements Plot {
     readonly canvasWidth: number;
     readonly canvasHeight: number;
     protected resize(): void;
-    protected leftText(): string;
-    protected rightText(): string;
+    readonly leftTextSVGElement: d3.Selection<SVGElement>;
+    readonly rightTextSVGElement: d3.Selection<SVGElement>;
     abstract update(): void;
 }

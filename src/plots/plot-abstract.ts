@@ -172,7 +172,7 @@ export default abstract class AbstractPlot implements Plot {
 
     //TODO: correct positioning
     this.leftTextBox
-      .text(this.leftText())
+      //.text(this.leftText())
       .attr("x", ((width - this._canvasWidth) / 2))
       .attr("y", ((height - this._canvasHeight) / 2) + 10)
       .attr("fill", "red")
@@ -180,7 +180,7 @@ export default abstract class AbstractPlot implements Plot {
 
     //TODO: correct positioning
     this.rightTextBox
-      .text(this.rightText())
+      //.text(this.rightText())
       .attr("text-anchor", "end")
       .attr("x", this._canvasWidth + ((width - this._canvasWidth) / 2))
       .attr("y", ((height - this._canvasHeight) / 2) + 10)
@@ -188,6 +188,15 @@ export default abstract class AbstractPlot implements Plot {
       .attr("width", textBoxWidth);
   }
 
+  public get leftTextSVGElement() : d3.Selection<SVGElement> {
+    return this.leftTextBox;
+  }
+  
+  public get rightTextSVGElement() : d3.Selection<SVGElement> {
+    return this.rightTextBox;
+  }
+  
+  /*
   protected leftText(): string {
     return "";
   }
@@ -195,6 +204,7 @@ export default abstract class AbstractPlot implements Plot {
   protected rightText(): string {
     return "";
   }
+  */
 
   abstract update(): void;
 

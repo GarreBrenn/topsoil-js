@@ -139,6 +139,8 @@ export default class ScatterPlot extends AbstractPlot {
 
   }
 
+
+  /*
   protected leftText(): string {
     const defaultText = "";
     let text = "";
@@ -158,8 +160,9 @@ export default class ScatterPlot extends AbstractPlot {
     
     return text;
   }
+  */
 
-  protected rightText(): string {
+  protected updateRightText(selector: d3.Selection<SVGElement>) {
     let uncertainty: string = "" + this.options[Option.UNCERTAINTY];
     let text = "Uncertainty:"
 
@@ -171,11 +174,14 @@ export default class ScatterPlot extends AbstractPlot {
       text += " undefined"
     }
     
-    return text;
+    selector.text(text);
   }
 
   update() {
     this.resize();
+
+    let rightText = this.rightTextSVGElement;
+    this.updateRightText(rightText);
 
     this.displayContainer
       .selectAll(`.${AXIS_CLASS} text`)
