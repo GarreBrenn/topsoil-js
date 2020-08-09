@@ -153,7 +153,7 @@ export class McLeanRegression implements FeatureInterface {
     }
 
     let leftText = plot.leftTextSVGElement;
-    leftText.text("TESTING Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5))
+    leftText.text("Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5))
 
   }
 

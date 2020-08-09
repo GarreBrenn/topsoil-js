@@ -139,29 +139,6 @@ export default class ScatterPlot extends AbstractPlot {
 
   }
 
-
-  /*
-  protected leftText(): string {
-    const defaultText = "";
-    let text = "";
-    
-    if (this.options.regression_mclean == true) {
-      text = "regression is on";
-      //text = "" + this.options.regression_mclean;
-      try {
-        text = "Slope: " + this.regressionBridge.getRoundedSlope(5) + ", y-intercept: " + this.regressionBridge.getRoundedIntercept(5);
-      } catch (e) {
-        text = e;
-      }
-  
-    } else {
-      text = defaultText;
-    }
-    
-    return text;
-  }
-  */
-
   protected updateRightText(selector: d3.Selection<SVGElement>) {
     let uncertainty: string = "" + this.options[Option.UNCERTAINTY];
     let text = "Uncertainty:"

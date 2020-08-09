@@ -14426,7 +14426,7 @@ class McLeanRegression {
             upperEnvelope.attr("d", lineGenerator(this.envelopeUpperBound));
         }
         let leftText = plot.leftTextSVGElement;
-        leftText.text("TESTING Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5));
+        leftText.text("Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5));
     }
     undraw(plot) {
         const layerToDrawOn = plots_1.findLayer(plot, plots_1.Feature.MCLEAN_REGRESSION);
@@ -15761,27 +15761,6 @@ class ScatterPlot extends plot_abstract_1.default {
             .call(this.x.axis);
         this.yAxisG.call(this.y.axis);
     }
-    /*
-    protected leftText(): string {
-      const defaultText = "";
-      let text = "";
-      
-      if (this.options.regression_mclean == true) {
-        text = "regression is on";
-        //text = "" + this.options.regression_mclean;
-        try {
-          text = "Slope: " + this.regressionBridge.getRoundedSlope(5) + ", y-intercept: " + this.regressionBridge.getRoundedIntercept(5);
-        } catch (e) {
-          text = e;
-        }
-    
-      } else {
-        text = defaultText;
-      }
-      
-      return text;
-    }
-    */
     updateRightText(selector) {
         let uncertainty = "" + this.options["uncertainty" /* UNCERTAINTY */];
         let text = "Uncertainty:";

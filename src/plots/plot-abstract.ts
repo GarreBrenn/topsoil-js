@@ -195,16 +195,6 @@ export default abstract class AbstractPlot implements Plot {
   public get rightTextSVGElement() : d3.Selection<SVGElement> {
     return this.rightTextBox;
   }
-  
-  /*
-  protected leftText(): string {
-    return "";
-  }
-
-  protected rightText(): string {
-    return "";
-  }
-  */
 
   abstract update(): void;
 
