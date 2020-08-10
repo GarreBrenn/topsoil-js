@@ -23,6 +23,8 @@ export const ErrorBars = {
       }
     } = plot;
 
+    console.log("uncertainty: " + uncertainty + " typeOf: " + typeof uncertainty);
+
     const layerToDrawOn = findLayer(plot, Feature.ERROR_BARS);
 
     const validEntries = data.filter(d => {

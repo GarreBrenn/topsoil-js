@@ -26,6 +26,19 @@ export class McLeanRegression implements FeatureInterface {
 
   draw(plot: ScatterPlot) {
 
+    // Draw info box
+    let info = plot.displayContainer.select("." + McLeanRegression.INFO_CLASS);
+
+    if (info.empty()) {
+      info = plot.displayContainer.append("text")
+      .attr("class", McLeanRegression.INFO_CLASS)
+      .attr("font-family", "sans-serif")
+      .attr("font-size", "12px")
+      .attr("x", 0)
+      .attr("y", -20)
+      .attr("fill", "black");
+    }
+
     // Calculate line
     const {
       data,
@@ -35,6 +48,9 @@ export class McLeanRegression implements FeatureInterface {
       },
       y: {
         scale: yScale
+      },
+      options: {
+        uncertainty
       }
     } = plot;
 
@@ -69,6 +85,10 @@ export class McLeanRegression implements FeatureInterface {
         .attr("stroke", "black")
         .attr("stroke-width", 1);
     }
+
+    let infoWidth = (info.node() as SVGTextElement).getBBox().width;
+    info
+      .attr("x", 0);
 
     // Update line
     // @bowring 12 JUNE 2020 : extended plotting to negative X
@@ -135,8 +155,8 @@ export class McLeanRegression implements FeatureInterface {
                 dot6 = dot(vperp, transpose(vperp)) as number[][],
                 s2perp = thing5 / dot6[0][0],
 
-                xv = 2 * Math.cos(Math.atan(-vXVar / vYVar)) * Math.sqrt(s2perp),
-                yv = 2 * Math.sin(Math.atan(-vXVar / vYVar)) * Math.sqrt(s2perp),
+                xv = uncertainty * Math.cos(Math.atan(-vXVar / vYVar)) * Math.sqrt(s2perp),
+                yv = uncertainty * Math.sin(Math.atan(-vXVar / vYVar)) * Math.sqrt(s2perp),
 
                 xplus = xScale(aXVar + vXVar * tStep + xv),
                 yplus = yScale(aYVar + vYVar * tStep + yv),
