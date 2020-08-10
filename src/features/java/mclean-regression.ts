@@ -172,7 +172,9 @@ export class McLeanRegression implements FeatureInterface {
       upperEnvelope.attr("d", lineGenerator(this.envelopeUpperBound));
     }
 
-    info.text("Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5));
+    let leftText = plot.leftTextSVGElement;
+    leftText.text("Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5))
+
   }
 
   undraw(plot: ScatterPlot) {
@@ -181,6 +183,8 @@ export class McLeanRegression implements FeatureInterface {
     layerToDrawOn.selectAll("." + McLeanRegression.UPPER_ENVELOPE_CLASS).remove();
     layerToDrawOn.selectAll("." + McLeanRegression.LOWER_ENVELOPE_CLASS).remove();
     plot.displayContainer.selectAll("." + McLeanRegression.INFO_CLASS).remove();
+    let leftText = plot.leftTextSVGElement;
+    leftText.text("");
   }
 
   private calcSav(savString: string) {
