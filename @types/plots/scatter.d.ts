@@ -24,6 +24,7 @@ export default class ScatterPlot extends AbstractPlot {
     regressionBridge: RegressionBridge;
     constructor(root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition);
     protected resize(): void;
+    protected updateRightText(selector: d3.Selection<SVGElement>): void;
     update(): void;
     getDataExtents(): number[];
     changeAxisExtents(xMin: number, xMax: number, yMin: number, yMax: number, doInterpolate?: boolean): void;

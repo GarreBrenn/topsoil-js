@@ -139,8 +139,26 @@ export default class ScatterPlot extends AbstractPlot {
 
   }
 
+  protected updateRightText(selector: d3.Selection<SVGElement>) {
+    let uncertainty: string = "" + this.options[Option.UNCERTAINTY];
+    let text = "Uncertainty:"
+
+    if (uncertainty == "1" || uncertainty == "2") {
+      text += " " + uncertainty + "σ";
+    } else if (uncertainty == "2.4477") {
+      text += " " + "95% Confidence";
+    } else {
+      text += " undefined"
+    }
+    
+    selector.text(text);
+  }
+
   update() {
     this.resize();
+
+    let rightText = this.rightTextSVGElement;
+    this.updateRightText(rightText);
 
     this.displayContainer
       .selectAll(`.${AXIS_CLASS} text`)
