@@ -16,7 +16,7 @@ export const Ellipses = {
       uncertainty
     } = plot.options;
 
-    console.log("uncertaintyE: " + uncertainty + " typeOf: " + typeof uncertainty);
+    console.log("options.reset_: " + plot.options.reset_view_on_change_unc);
 
     const layerToDrawOn = findLayer(plot, Feature.ELLIPSES);
 

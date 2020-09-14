@@ -157,6 +157,12 @@ export default class ScatterPlot extends AbstractPlot {
   update() {
     this.resize();
 
+    if (this.options.reset_view_on_change_unc) {
+      this.resetView();
+      this.resize();
+      this.options.reset_view_on_change_unc = false;
+    }
+
     let rightText = this.rightTextSVGElement;
     this.updateRightText(rightText);
 

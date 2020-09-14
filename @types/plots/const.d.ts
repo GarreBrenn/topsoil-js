@@ -30,6 +30,7 @@ export declare const enum Option {
     LAMBDA_238 = "lambda_238",
     R238_235S = "R238_235S",
     SHOW_UNINCLUDED = "show_unincluded",
+    RESET_VIEW_ON_CHANGE_UNC = "reset_view_on_change_unc",
     POINTS = "points",
     POINTS_FILL = "points_fill",
     POINTS_OPACITY = "points_opacity",

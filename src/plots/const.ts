@@ -38,6 +38,7 @@ export const enum Option {
   R238_235S = "R238_235S",
 
   SHOW_UNINCLUDED = "show_unincluded",
+  RESET_VIEW_ON_CHANGE_UNC = "reset_view_on_change_unc",
 
   POINTS = "points",
   POINTS_FILL = "points_fill",

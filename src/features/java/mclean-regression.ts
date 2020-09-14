@@ -172,6 +172,8 @@ export class McLeanRegression implements FeatureInterface {
       upperEnvelope.attr("d", lineGenerator(this.envelopeUpperBound));
     }
 
+    info.text("this: " + plot.options.reset_view_on_change_unc);
+
     let leftText = plot.leftTextSVGElement;
     leftText.text("Slope: " + regression.getRoundedSlope(5) + ", y-intercept: " + regression.getRoundedIntercept(5))
 
