@@ -31,6 +31,8 @@ export default abstract class AbstractPlot implements Plot {
   readonly leftTextBox: d3.Selection<SVGElement>;
   readonly rightTextBox: d3.Selection<SVGElement>;
 
+  errorTextBox: d3.Selection<SVGElement>;
+
   javaBridge: JavaBridge;
 
   constructor(readonly root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition) {
@@ -69,6 +71,12 @@ export default abstract class AbstractPlot implements Plot {
       .attr("class", "right textbox")
       .attr("font-family", "sans-serif")
       .attr("font-size", "15px")
+
+    this.errorTextBox = this.svg
+    .append("text")
+    .attr("class", "error textbox")
+    .attr("font-family", "sans-serif")
+    .attr("font-size", "15px")
 
     this.canvas = this.displayContainer
       .append("g")
@@ -170,22 +178,24 @@ export default abstract class AbstractPlot implements Plot {
 
     const textBoxWidth = (width / 2) - (titleDimensions.width / 2) - 10;
 
-    //TODO: correct positioning
     this.leftTextBox
-      //.text(this.leftText())
       .attr("x", ((width - this._canvasWidth) / 2))
       .attr("y", ((height - this._canvasHeight) / 2) + 10)
       .attr("fill", "red")
       .attr("width", textBoxWidth);
 
-    //TODO: correct positioning
     this.rightTextBox
-      //.text(this.rightText())
       .attr("text-anchor", "end")
       .attr("x", this._canvasWidth + ((width - this._canvasWidth) / 2))
       .attr("y", ((height - this._canvasHeight) / 2) + 10)
       .attr("fill", "red")
       .attr("width", textBoxWidth);
+
+    this.errorTextBox
+    .attr("x", ((width - this._canvasWidth) / 2))
+    .attr("y", ((height - this._canvasHeight) / 2))
+    .attr("width", 2*textBoxWidth)
+    .text("Error: ");
   }
 
   public get leftTextSVGElement() : d3.Selection<SVGElement> {

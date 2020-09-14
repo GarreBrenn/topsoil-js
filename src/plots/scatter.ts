@@ -225,11 +225,12 @@ export default class ScatterPlot extends AbstractPlot {
 
   set options(options: Config) {
     super.options = options;
-    //this._options = options;
     if (options.uncertainty != this._options.uncertainty
       && options.reset_view_on_change_unc) {
+        this.errorTextBox.text("I was changed!");
         this.resetView();
       }
+    this.errorTextBox.text("I passed over the if");
     this.update();
   }
 

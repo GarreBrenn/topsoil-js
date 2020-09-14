@@ -15536,6 +15536,11 @@ class AbstractPlot {
             .attr("class", "right textbox")
             .attr("font-family", "sans-serif")
             .attr("font-size", "15px");
+        this.errorTextBox = this.svg
+            .append("text")
+            .attr("class", "error textbox")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", "15px");
         this.canvas = this.displayContainer
             .append("g")
             .attr("clip-path", "url(#plotClipBox)");
@@ -15573,6 +15578,7 @@ class AbstractPlot {
         return this._options;
     }
     set options(options) {
+        this.errorTextBox.text("I am being called in the super");
         this._options = options;
         this.update();
     }
@@ -15613,21 +15619,22 @@ class AbstractPlot {
             .attr("x", (this._canvasWidth / 2) - (titleDimensions.width / 2))
             .attr("y", -(this._margin.top / 2) + (titleDimensions.height / 3));
         const textBoxWidth = (width / 2) - (titleDimensions.width / 2) - 10;
-        //TODO: correct positioning
         this.leftTextBox
-            //.text(this.leftText())
             .attr("x", ((width - this._canvasWidth) / 2))
             .attr("y", ((height - this._canvasHeight) / 2) + 10)
             .attr("fill", "red")
             .attr("width", textBoxWidth);
-        //TODO: correct positioning
         this.rightTextBox
-            //.text(this.rightText())
             .attr("text-anchor", "end")
             .attr("x", this._canvasWidth + ((width - this._canvasWidth) / 2))
             .attr("y", ((height - this._canvasHeight) / 2) + 10)
             .attr("fill", "red")
             .attr("width", textBoxWidth);
+        this.errorTextBox
+            .attr("x", ((width - this._canvasWidth) / 2))
+            .attr("y", ((height - this._canvasHeight) / 2))
+            .attr("width", 2 * textBoxWidth)
+            .text("Error: ");
     }
     get leftTextSVGElement() {
         return this.leftTextBox;
@@ -15861,11 +15868,12 @@ class ScatterPlot extends plot_abstract_1.default {
     }
     set options(options) {
         super.options = options;
-        //this._options = options;
         if (options.uncertainty != this._options.uncertainty
             && options.reset_view_on_change_unc) {
+            this.errorTextBox.text("I was changed!");
             this.resetView();
         }
+        this.errorTextBox.text("I passed over the if");
         this.update();
     }
     get options() {
