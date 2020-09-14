@@ -26,6 +26,7 @@ export default class ScatterPlot extends AbstractPlot {
     protected resize(): void;
     protected updateRightText(selector: d3.Selection<SVGElement>): void;
     update(): void;
+    options: Config;
     getDataExtents(): number[];
     changeAxisExtents(xMin: number, xMax: number, yMin: number, yMax: number, doInterpolate?: boolean): void;
     resetView(): void;

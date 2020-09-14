@@ -157,12 +157,6 @@ export default class ScatterPlot extends AbstractPlot {
   update() {
     this.resize();
 
-    if (this.options.reset_view_on_change_unc) {
-      this.resetView();
-      this.resize();
-      this.options.reset_view_on_change_unc = false;
-    }
-
     let rightText = this.rightTextSVGElement;
     this.updateRightText(rightText);
 
@@ -227,6 +221,20 @@ export default class ScatterPlot extends AbstractPlot {
         yDomain = this.y.scale.domain();
       this.javaBridge.syncAxes(xDomain[0], xDomain[1], yDomain[0], yDomain[1]);
     }
+  }
+
+  set options(options: Config) {
+    super.options = options;
+    //this._options = options;
+    if (options.uncertainty != this._options.uncertainty
+      && options.reset_view_on_change_unc) {
+        this.resetView();
+      }
+    this.update();
+  }
+
+  get options() {
+    return super.options;
   }
 
   getDataExtents() {

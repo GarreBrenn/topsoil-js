@@ -15795,11 +15795,6 @@ class ScatterPlot extends plot_abstract_1.default {
     }
     update() {
         this.resize();
-        if (this.options.reset_view_on_change_unc) {
-            this.resetView();
-            this.resize();
-            this.options.reset_view_on_change_unc = false;
-        }
         let rightText = this.rightTextSVGElement;
         this.updateRightText(rightText);
         this.displayContainer
@@ -15863,6 +15858,18 @@ class ScatterPlot extends plot_abstract_1.default {
             const xDomain = this.x.scale.domain(), yDomain = this.y.scale.domain();
             this.javaBridge.syncAxes(xDomain[0], xDomain[1], yDomain[0], yDomain[1]);
         }
+    }
+    set options(options) {
+        super.options = options;
+        //this._options = options;
+        if (options.uncertainty != this._options.uncertainty
+            && options.reset_view_on_change_unc) {
+            this.resetView();
+        }
+        this.update();
+    }
+    get options() {
+        return super.options;
     }
     getDataExtents() {
         const extents = [1000000, -1000000, 1000000, -1000000];
