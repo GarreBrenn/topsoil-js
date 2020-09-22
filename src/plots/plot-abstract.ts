@@ -56,7 +56,8 @@ export default abstract class AbstractPlot implements Plot {
       .append("text")
       .attr("class", "title-text")
       .attr("font-family", "sans-serif")
-      .attr("font-size", "24px");
+      .attr("font-size", "24px")
+      .style("text-anchor", "middle")
 
     this.leftTextBox = this.svg
       .append("text")
@@ -163,10 +164,12 @@ export default abstract class AbstractPlot implements Plot {
 
     const titleDimensions = (this.titleLabel.node() as SVGElement).getBoundingClientRect();
 
+    console.log(this._margin.left + "," + this._margin.top);
+
     this.titleLabel
       .text(this._options.title)
-      .attr("x", (this._canvasWidth / 2) - (titleDimensions.width / 2))
-      .attr("y", -(this._margin.top / 2) + (titleDimensions.height / 3) - 10);
+      .attr("x", (this._canvasWidth / 2))
+      .attr("y", -(this._margin.top / 2));
 
     const textBoxWidth = (width / 2) - (titleDimensions.width / 2) - 10;
 
@@ -174,7 +177,7 @@ export default abstract class AbstractPlot implements Plot {
     this.leftTextBox
       //.text(this.leftText())
       .attr("x", ((width - this._canvasWidth) / 2))
-      .attr("y", ((height - this._canvasHeight) / 2) - 15)
+      .attr("y", ((height - this._canvasHeight) / 2) - 18)
       .attr("fill", "red")
       .attr("width", textBoxWidth);
 
@@ -183,7 +186,7 @@ export default abstract class AbstractPlot implements Plot {
       //.text(this.rightText())
       .attr("text-anchor", "end")
       .attr("x", this._canvasWidth + ((width - this._canvasWidth) / 2))
-      .attr("y", ((height - this._canvasHeight) / 2) - 15)
+      .attr("y", ((height - this._canvasHeight) / 2) - 18)
       .attr("fill", "red")
       .attr("width", textBoxWidth);
   }
