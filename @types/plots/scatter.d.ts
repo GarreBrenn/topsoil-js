@@ -3,6 +3,7 @@ import AbstractPlot from "./plot-abstract";
 import { DataEntry, Config } from "./const";
 import { LayerDefinition } from "./plot";
 import { RegressionBridge } from '../utils/bridge';
+import { CircleBridge } from '../utils/bridge';
 export default class ScatterPlot extends AbstractPlot {
     readonly root: HTMLDivElement;
     private features;
@@ -22,6 +23,7 @@ export default class ScatterPlot extends AbstractPlot {
     private yLabel;
     private yAxisG;
     regressionBridge: RegressionBridge;
+    circleBridge: CircleBridge;
     constructor(root: HTMLDivElement, data: DataEntry[], options: Config, layers?: LayerDefinition);
     protected resize(): void;
     protected updateRightText(selector: d3.Selection<SVGElement>): void;

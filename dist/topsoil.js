@@ -15459,6 +15459,7 @@ var Feature;
     Feature["CONCORDIA"] = "concordia";
     Feature["EVOLUTION"] = "evolution";
     Feature["MCLEAN_REGRESSION"] = "mclean-regression";
+    Feature["CIRCLE"] = "circle";
 })(Feature = exports.Feature || (exports.Feature = {}));
 
 
@@ -15850,6 +15851,9 @@ class ScatterPlot extends plot_abstract_1.default {
             else {
                 this.features[const_1.Feature.MCLEAN_REGRESSION].undraw(this);
             }
+        }
+        if (this.circleBridge) {
+            this.features[const_1.Feature.CIRCLE].draw(this);
         }
         // Make upcalls to Java if bridge exists
         if (this.javaBridge) {

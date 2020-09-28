@@ -13,3 +13,6 @@ export interface RegressionBridge {
     getV(): string;
     getSav(): string;
 }
+export interface CircleBridge {
+    getRadius(): number;
+}

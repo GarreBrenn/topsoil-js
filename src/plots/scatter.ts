@@ -9,6 +9,7 @@ import { ErrorBars } from "../features/error-bars";
 import { LayerDefinition } from "./plot";
 import { McLeanRegression } from "../features/java/mclean-regression";
 import { RegressionBridge } from '../utils/bridge';
+import { CircleBridge } from '../utils/bridge';
 
 const AXIS_CLASS = "axis";
 
@@ -30,6 +31,7 @@ export default class ScatterPlot extends AbstractPlot {
   private yAxisG: d3.Selection<SVGGElement>;
 
   regressionBridge: RegressionBridge;
+  circleBridge: CircleBridge;
 
   constructor(
     readonly root: HTMLDivElement,
@@ -213,6 +215,10 @@ export default class ScatterPlot extends AbstractPlot {
       } else {
         this.features[Feature.MCLEAN_REGRESSION].undraw(this);
       }
+    }
+
+    if (this.circleBridge) {
+      this.features[Feature.CIRCLE].draw(this);
     }
 
     // Make upcalls to Java if bridge exists
