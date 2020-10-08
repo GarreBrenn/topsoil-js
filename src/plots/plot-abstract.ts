@@ -56,7 +56,7 @@ export default abstract class AbstractPlot implements Plot {
       .append("text")
       .attr("class", "title-text")
       .attr("font-family", "sans-serif")
-      .attr("font-size", "24px")
+      .attr("font-size", "20px")
       .style("text-anchor", "middle")
 
     this.leftTextBox = this.svg
